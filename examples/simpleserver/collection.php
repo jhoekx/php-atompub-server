@@ -8,8 +8,8 @@ require_once("../classes/app_response.php");
 require_once("../classes/app_request.php");
 require_once("../classes/app_servicedoc.php");
 
-$base_uri = "http://localhost/driedaagse/app/";
-//$base_uri = "http://driedaagse.hamok.be/app/";
+// Edit this
+$base_uri = "http://localhost/app/";
 
 $request = new App_Request();
 $service = new App_Servicedoc("service.xml", $base_uri);
