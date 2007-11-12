@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Test</title>
+<script>
+
+var resources = {};
+
+addEventListener("load", function () {
+	document.getElementById("uri").value = "http://localhost/app/news/";
+	document.getElementById("method").value = "GET";
+	document.getElementById("mime").value = "application/atom+xml;type=entry";
+	document.getElementById("slug").value = "test";
+
+	var xhr = new XMLHttpRequest();
+	
+	xhr.open("GET", "data1.xml");
+	xhr.onload = function () {
+		document.getElementById("entry").value = xhr.responseText;
+	};
+	
+	xhr.send("");
+
+}, false);
+
+function preWrite(text) {
+	var pre = document.createElement("PRE");
+	pre.appendChild( document.createTextNode(text) );
+	
+	document.body.appendChild(pre);
+}
+
+function clearPRE() {
+	var pres = document.getElementsByTagName("PRE");
+	while (pres[0]) {
+		pres[0].parentNode.removeChild(pres[0]);
+	}
+}
+
+function submitDoc() {
+	
+	var method = document.getElementById("method").value;
+	var uri = document.getElementById("uri").value;
+	
+	
+	var xhr = new XMLHttpRequest();
+	
+	xhr.open(method, uri);
+	
+	if (method == "POST" || method == "PUT") {
+		xhr.setRequestHeader("Slug", document.getElementById("slug").value );
+		xhr.setRequestHeader("Content-Type", document.getElementById("mime").value);
+	}
+	xhr.setRequestHeader("Cache-control","no-store");
+	
+	if (method == "GET" && resources[uri]) {
+		preWrite("in cache");
+		xhr.setRequestHeader("If-None-Match", resources[uri]);
+	}
+	if (method == "PUT" && resources[uri]) {
+		preWrite("If match");
+		xhr.setRequestHeader("If-Match", resources[uri]);
+	}
+	
+	
+	xhr.onload = function () {
+		preWrite("STATUS: "+xhr.status+" "+xhr.statusText);
+		preWrite( xhr.getAllResponseHeaders() );
+		preWrite( xhr.responseText );
+		
+		// etag
+		resources[uri] = xhr.getResponseHeader("ETag");
+		
+		if ( xhr.status == 201 ) {
+			var location = xhr.getResponseHeader("Location");
+			
+			preWrite("GET "+ location);
+			
+			xhr2 = new XMLHttpRequest();
+			xhr2.open("GET", location);
+			xhr2.onload = function () {
+				preWrite( xhr2.getAllResponseHeaders() );
+				preWrite(xhr2.responseText);
+			}
+			xhr2.send();
+			
+		}
+	}
+	
+	if (method == "POST" || method =="PUT") {
+		xhr.send( document.getElementById("entry").value );
+	} else {
+		xhr.send("");
+	}
+	
+}
+
+</script>
+
+<style type="text/css">
+	label {
+		display:inline-block;
+		width:5em;
+	}
+	pre {
+		white-space:pre-wrap;
+		font-size:80%;
+	}
+</style>
+
+</head>
+
+<body>
+<form method="post" action="test1.php">
+<p><label for="uri">URI: </label><input type="url" id="uri" size="50" required></p>
+<p><label for="method">METHOD: </label><input type="text" id="method" size="50" required></p>
+<p><label for="mime">MIME: </label><input type="text" id="mime" size="50"></p>
+<p><label for="slug">SLUG: </label><input type="text" id="slug" size="50"></p>
+<p class="textarea"><textarea cols="70" rows="10" id="entry" required></textarea></p>
+<p>
+	<input type="submit" value="Submit" name="niks" onclick="submitDoc();return false">
+	<input type="submit" value="Clean" name="ookniks" onclick="clearPRE();return false">
+</p>
+</form>
+</body>
+</html>
