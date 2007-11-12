@@ -1,0 +1,38 @@
+#summary Quick testing HTTP server
+
+= Introduction =
+
+This document shows how to quickly setup a server for testing. There is no authentication, so don't use it in production. You'll need mod_rewrite or similar tools to rewrite everything to the url "handling" code (which should also not be used in production).
+
+
+= Details =
+
+== Get the server code ==
+Check out the latest version of the server software from [http://code.google.com/p/php-atompub-server/source subversion].
+
+== Setting up ==
+The example code is in the [http://php-atompub-server.googlecode.com/svn/trunk/examples/simpleserver/ subversion repo]. Save it somewhere where it's web-accessible in Apache.
+
+Now edit the .htaccess file of the directory where you've installed the server:
+{{{
+RewriteEngine On
+
+RewriteRule ^(.+) collection.php
+
+DirectoryIndex collection.php
+}}}
+
+Make sure the server code is in the ../classes/ directory, or change the includes in the collection.php file.
+
+== Base URI ==
+Proceed to add the base URI of the testsite to collection.php. It should be the URI of the "directory" where that file lives.
+
+== Setting up the service document ==
+The example also includes a service document. It contains one collection with the name "test". The service document also has a base URI in the xml:base attribute, change it to whatever the base URI of the collection.php file is.
+
+== Test it ==
+Now, the server should be up and running. Try to access the service document at $base_uri/service . If that works all is fine, otherwise, ask for help.
+
+In the [http://php-atompub-server.googlecode.com/svn/trunk/tools/ tools section], there's a file postatom.html. Save it somewhere on your server, together with the data.xml file, which contains a sample entry (straight from the spec) and point your browser at it. It's a crude way to test the functionality.
+
+Good luck!
