@@ -1,6 +1,5 @@
 <?php
 require_once("../classes/app_collection_specific.php");
-require_once("htmlpurifier/HTMLPurifier.auto.php");
 
 class news_specific implements App_Collection_Specific{
 	public function on_read($response) {
@@ -8,6 +7,7 @@ class news_specific implements App_Collection_Specific{
 	}
 	
 	public function on_create($entry) {
+		require_once("htmlpurifier/HTMLPurifier.auto.php");
 		// add html link rel
 		$children = $entry->documentElement->childNodes;
 		foreach ($children as $child) {
@@ -59,6 +59,7 @@ class news_specific implements App_Collection_Specific{
 	}
 	
 	public function on_update($entry) {
+		require_once("htmlpurifier/HTMLPurifier.auto.php");
 		$this->clean_content($entry);
 	}
 	
