@@ -28,7 +28,7 @@ Make sure the server code is in the ../classes/ directory, or change the include
 Proceed to add the base URI of the testsite to collection.php. It should be the URI of the "directory" where that file lives.
 
 == Setting up the service document ==
-The example also includes a service document. It contains one collection with the name "test". The service document also has a base URI in the xml:base attribute, change it to whatever the base URI of the collection.php file is.
+The example also includes a service document. It contains one collection with the name "news". The service document also has a base URI in the xml:base attribute, change it to whatever the base URI of the collection.php file is.
 
 == Test it ==
 Now, the server should be up and running. Try to access the service document at $base_uri/service . If that works all is fine, otherwise, ask for help.
