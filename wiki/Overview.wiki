@@ -29,7 +29,7 @@ Feeds are paged at 10 entries per page, this value is editable in the storage cl
 === POSTing to a collection ===
 Entries that are posted to a collection will be given a URI like `$base_uri/{collection}/{year}/{month}/{day}/{slug}`. Currently, no `Content-Location` header is sent after creation (the `Location` header is sent though).
 
-php-atompub-server decides if the resource sent is a media entry based on the mimetype of the request. All text/? content will be converted to UTF-8 on posting, depending on the presence of the charset parameter.
+php-atompub-server decides if the resource sent is a media entry based on the mimetype of the request. All text/`*` content will be converted to UTF-8 on posting, depending on the presence of the charset parameter.
 
 Resources are given an extension based on the mimetype. If the mimetype is not in the list of known types, the default is text/plain (but this is a bug).
 
