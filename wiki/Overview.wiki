@@ -19,7 +19,7 @@ php-atompub-server uses the service document to determine the capabilities of a 
 Note that "whatever you like" is not quite correct. Collections should look like `$base_uri/{collection_name}/` . Also the collection name of "cats" is reserved by default in the sample server, since it allows you to access the feed of a category in `$base_uri/cats/{category}/` .
 
 === Storage ===
-There is a pluggable storage architecure. The filesystem based approach is generally preferred, but a PDO version is also available, though that one does not support categories.
+There is a pluggable storage architecture. The filesystem based approach is generally preferred, but a PDO version is also available, though that one does not support categories.
 
 === Feeds ===
 The feeds produced are currently not necessarily [http://feedvalidator.org/ valid]. Created entries will always have an `id`, `title` and `updated` element, but `summary`, `content` or `author` elements are not always added. Correct values for these elements can be provided using collection specific code.
@@ -29,7 +29,7 @@ Feeds are paged at 10 entries per page, this value is editable in the storage cl
 === POSTing to a collection ===
 Entries that are posted to a collection will be given a URI like `$base_uri/{collection}/{year}/{month}/{day}/{slug}`. Currently, no `Content-Location` header is sent after creation (the `Location` header is sent though).
 
-php-atompub-server decides if the resource sent is a media entry based on the mimetype of the request. All text/* content will be converted to UTF-8 on posting, depending on the presence of the charset parameter.
+php-atompub-server decides if the resource sent is a media entry based on the mimetype of the request. All text/? content will be converted to UTF-8 on posting, depending on the presence of the charset parameter.
 
 Resources are given an extension based on the mimetype. If the mimetype is not in the list of known types, the default is text/plain (but this is a bug).
 
@@ -47,4 +47,4 @@ Updating a resource requires the `If-Match` header to provide the correct ETag. 
 To delete a media entry, delete the corresponding media-link entry. Collection specific code will have to ensure that it listens to `on_delete` to remove for example static images.
 
 === Collection Specific Code ===
-After creation of the `App_Servicedoc` object, one can set a path to a directory where collection specific code lives. Collection specific code has a classname of `{collection}_specific` and has a filename of `{collection}.php`. It must implement the `[http://php-atompub-server.googlecode.com/svn/trunk/classes/app_collection_specific.php App_Collection_Specific]` interface.
+After creation of the `App_Servicedoc` object, one can set a path to a directory where collection specific code lives. Collection specific code has a classname of `{collection}_specific` and has a filename of `{collection}.php`. It must implement the [http://php-atompub-server.googlecode.com/svn/trunk/classes/app_collection_specific.php App_Collection_Specific] interface.
