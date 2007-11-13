@@ -1,0 +1,50 @@
+#summary Quick overview of functionality
+
+= Introduction =
+
+This page gives a quick overview of the features of php-atompub-server. To get something to play with up and running quickly, see [http://code.google.com/p/php-atompub-server/wiki/HTTPServer HTTPServer].
+
+
+= Quick Overview =
+
+== What is php-atompub-server? ==
+
+php-atompub-server aims to provide a framework to build web applications/pages entirely accessible through the [http://tools.ietf.org/html/rfc5023 Atom Publishing Protocol]. It allows access through the standard HTTP interface to !AtomPub, but it's also directly accessible from within PHP classes, so it's also possible to add a HTML administration interface for a site.
+
+== Features ==
+
+=== Collections ===
+php-atompub-server uses the service document to determine the capabilities of a specific collection. No fiddling with configuration directives, just edit the service document to whatever you like and it just works.
+
+Note that "whatever you like" is not quite correct. Collections should look like `$base_uri/{collection_name}/` . Also the collection name of "cats" is reserved by default in the sample server, since it allows you to access the feed of a category in `$base_uri/cats/{category}/` .
+
+=== Storage ===
+There is a pluggable storage architecure. The filesystem based approach is generally preferred, but a PDO version is also available, though that one does not support categories.
+
+=== Feeds ===
+The feeds produced are currently not necessarily [http://feedvalidator.org/ valid]. Created entries will always have an `id`, `title` and `updated` element, but `summary`, `content` or `author` elements are not always added. Correct values for these elements can be provided using collection specific code.
+
+Feeds are paged at 10 entries per page, this value is editable in the storage class. Paged feeds are given URI's like: `$base_uri/{collection}/3` in the example server. The sample HTTPServer also allows one to acces the complete feed with `$base_uri/{collection}/0` , this will be indicated by the {http://purl.org/syndication/history/1.0}complete element as defined in [http://tools.ietf.org/html/rfc5005#section-2 Feed Paging and Archiving].
+
+=== POSTing to a collection ===
+Entries that are posted to a collection will be given a URI like `$base_uri/{collection}/{year}/{month}/{day}/{slug}`. Currently, no `Content-Location` header is sent after creation (the `Location` header is sent though).
+
+php-atompub-server decides if the resource sent is a media entry based on the mimetype of the request. All text/* content will be converted to UTF-8 on posting, depending on the presence of the charset parameter.
+
+Resources are given an extension based on the mimetype. If the mimetype is not in the list of known types, the default is text/plain (but this is a bug).
+
+=== GETting a resource ===
+When a resource is requested, the `If-Modified-Since` and `If-None-Match` headers are taken into account and a `304` can be issued. If the request has an `Accept-Encoding` header that gives `gzip` a higher q-value than `identity`, the content will be gzipped.
+
+Resources are given a `Last-Modified` date and an `ETag`. The `ETag` of the gzipped version is not the same as the `ETag` of the non-gzipped version: `;gzip` is appended.
+
+It's possible to get a resource from a collection that no longer exists, as long as the resource is in the storage.
+
+=== PUTting a resource ===
+Updating a resource requires the `If-Match` header to provide the correct ETag. php-atompub-server will ensure that the `edit`, `edit-media` link relations and the `src`-attribute of `content` are unchanged.
+
+=== DELETE ===
+To delete a media entry, delete the corresponding media-link entry. Collection specific code will have to ensure that it listens to `on_delete` to remove for example static images.
+
+=== Collection Specific Code ===
+After creation of the `App_Servicedoc` object, one can set a path to a directory where collection specific code lives. Collection specific code has a classname of `{collection}_specific` and has a filename of `{collection}.php`. It must implement the `[http://php-atompub-server.googlecode.com/svn/trunk/classes/app_collection_specific.php App_Collection_Specific]` interface.
