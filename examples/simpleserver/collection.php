@@ -131,7 +131,7 @@ switch (count($parts)) {
 					default:
 						// paged categories
 						if (!isset($page)) {
-							$page = $parts[2];
+							$page = (int) $parts[2];
 						}
 						switch($request->method) {
 							case "HEAD":
@@ -160,9 +160,9 @@ switch (count($parts)) {
 	case 5:
 		// resource
 		$collection_name = $parts[0];
-		$year = $parts[1];
-		$month= $parts[2];
-		$day  = $parts[3];
+		$year = (int) $parts[1];
+		$month= (int) $parts[2];
+		$day  = (int) $parts[3];
 		$name = $parts[4];
 	
 		switch($request->method) {
