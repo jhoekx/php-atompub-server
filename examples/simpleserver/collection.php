@@ -43,16 +43,14 @@ switch (count($parts)) {
 				if ( array_key_exists('If-None-Match',$request->headers) && 
 								$etag == $request->headers['If-None-Match'] ) {
 					$response->http_status = "304 Not Modified";
-					$response->headers["Content-Type"] = "text/html; charset=utf-8";
-					$response->headers['Cache-Control'] = "must-revalidate";
-					$response->headers['ETag'] = $etag;
 					$response->response_body = "";
 				} else {
 					$response->http_status = "200 Ok";
-					$response->headers["Content-Type"] = "text/html; charset=utf-8";
-					$response->headers["ETag"] = $etag;
 					$response->response_body = file_get_contents("index.html");;
 				}
+				$response->headers["Content-Type"] = "text/html; charset=utf-8";
+				$response->headers['Cache-Control'] = "must-revalidate";
+				$response->headers['ETag'] = $etag;
 				break;
 			case "service":
 				// Service document
@@ -61,16 +59,14 @@ switch (count($parts)) {
 				if ( array_key_exists('If-None-Match',$request->headers) && 
 								$etag == $request->headers['If-None-Match'] ) {
 					$response->http_status = "304 Not Modified";
-					$response->headers["Content-Type"] = "application/atomsvc+xml";
-					$response->headers['Cache-Control'] = "must-revalidate";
-					$response->headers['ETag'] = $etag;
 					$response->response_body = "";
 				} else {
 					$response->http_status = "200 Ok";
-					$response->headers["Content-Type"] = "application/atomsvc+xml";
-					$response->headers["ETag"] = $etag;
 					$response->response_body = file_get_contents("service.xml");
 				}
+				$response->headers["Content-Type"] = "application/atomsvc+xml";
+				$response->headers['Cache-Control'] = "must-revalidate";
+				$response->headers['ETag'] = $etag;
 				break;
 			default:
 				$response->http_status = "404 File Not Found";
@@ -81,10 +77,6 @@ switch (count($parts)) {
 		break;
 	case 2:
 		switch( $parts[0] ) {
-			case "cats":
-				// unpaged categories
-				
-				break;
 			default:
 				// collections
 				$collection_name = $parts[0];
