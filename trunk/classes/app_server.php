@@ -742,7 +742,9 @@ class App_Server {
 				$this->response->headers["Vary"] = "Content-Encoding";
 				
 				if ( array_key_exists("ETag",$this->response->headers) ) {
-					$this->response->headers['ETag'] = $this->response->headers['ETag'].";gzip";
+					$this->response->headers['ETag'] = 
+						'"'.str_replace("\"","",$this->response->headers['ETag']).
+						";".$this->response->headers["Content-Encoding"].'"';
 				}
 			}
 		}
@@ -760,7 +762,7 @@ class App_Server {
 				
 				// ETag for GZipped version should be different
 				if ( array_key_exists("Content-Encoding",$this->response->headers) ) {
-					$etag = $etag.";".$this->response->headers["Content-Encoding"];
+					$etag = '"'.str_replace("\"","",$etag).";".$this->response->headers["Content-Encoding"].'"';
 				}
 				
 				$this->response->headers['ETag'] = $etag;
@@ -779,7 +781,7 @@ class App_Server {
 				
 				// ETag for GZipped version should be different
 				if ( array_key_exists("Content-Encoding",$this->response->headers) ) {
-					$etag = $etag.";".$this->response->headers["Content-Encoding"];
+					$etag = '"'.str_replace("\"","",$etag).";".$this->response->headers["Content-Encoding"].'"';
 				}
 				
 				$this->response->headers['ETag'] = $etag;
