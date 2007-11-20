@@ -26,6 +26,10 @@ class App_Request {
 		if ( array_key_exists("HTTP_IF_MATCH",$_SERVER) ) {
 			$this->headers["If-Match"] = $_SERVER["HTTP_IF_MATCH"];
 		}
+		// If-Modified-Since
+		if ( array_key_exists("HTTP_IF_MODIFIED_SINCE",$_SERVER) ) {
+			$this->headers["If-Modified-Since"] = $_SERVER["HTTP_IF_MODIFIED_SINCE"];
+		}
 		
 		// Accept-Encoding
 		if ( array_key_exists("HTTP_ACCEPT_ENCODING",$_SERVER) ) {
