@@ -1,7 +1,7 @@
 <?php
 /**
  * The atompub Server file.
- * @package Appi
+ * @package PAPS
  */
  
 /**
@@ -21,7 +21,7 @@ require_once("app_response.php");
  * App_Collection implements the CRUD actions defined in the 
  * {@link http://tools.ietf.org/html/rfc5023 atom publishing protocol}
  * and is the starting point of all actions.
- * @package Appi
+ * @package PAPS
  */
 class App_Server {
 	/* NS: http://www.w3.org/2007/app , http://www.w3.org/2005/Atom */
@@ -30,8 +30,8 @@ class App_Server {
 	private $response;
 	private $request;
 	private $store;
-	public $service;
 	
+	public $service;
 	public $base_uri;
 	
 	// Constructor
@@ -758,7 +758,9 @@ class App_Server {
 				
 				$this->response->http_status = "304 Not Modified";
 				
-				$this->response->headers['Cache-Control'] = "must-revalidate";
+				if ( !array_key_exists("Cache-Control",$this->response->headers) ) {
+					$this->response->headers['Cache-Control'] = "must-revalidate";
+				}
 				
 				// ETag for GZipped version should be different
 				if ( array_key_exists("Content-Encoding",$this->response->headers) ) {
@@ -777,7 +779,9 @@ class App_Server {
 			if ( $req_mod >= strtotime($last_modified) ) {
 				$this->response->http_status = "304 Not Modified";
 				
-				$this->response->headers['Cache-Control'] = "must-revalidate";
+				if ( !array_key_exists("Cache-Control",$this->response->headers) ) {
+					$this->response->headers['Cache-Control'] = "must-revalidate";
+				}
 				
 				// ETag for GZipped version should be different
 				if ( array_key_exists("Content-Encoding",$this->response->headers) ) {
