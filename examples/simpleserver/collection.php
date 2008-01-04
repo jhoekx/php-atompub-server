@@ -157,6 +157,13 @@ switch (count($parts)) {
 		$day  = (int) $parts[3];
 		$name = $parts[4];
 	
+		if ($month < 10) {
+			$month = "0".$month;
+		}
+		if ($day < 10) {
+			$day = "0".$day;
+		}
+	
 		switch($request->method) {
 			case "HEAD":
 			case "GET":
