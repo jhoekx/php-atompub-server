@@ -324,6 +324,8 @@ class App_Server {
 			$this->response->headers["Content-Type"] = $this->request->headers["Content-Type"];
 			$this->response->headers["Location"] = 
 					$this->base_uri."$collection/$year/$month/$day/$name.atomentry";
+			$this->response->headers["Content-Location"] = 
+					$this->base_uri."$collection/$year/$month/$day/$name.atomentry";
 			$this->response->response_body = $entry_doc->saveXML();
 			
 		} catch (Exception $e) {
@@ -403,6 +405,8 @@ class App_Server {
 		$this->response->headers["Content-Type"] = $this->request->headers["Content-Type"];
 		$this->response->headers["Location"] = 
 				$this->base_uri."$collection/$year/$month/$day/$name.atomentry";
+		$this->response->headers["Content-Location"] = 
+					$this->base_uri."$collection/$year/$month/$day/$name.atomentry";
 		$this->response->response_body = $template->saveXML();
 
 	}
@@ -667,6 +671,7 @@ class App_Server {
 			
 				$this->response->http_status = "200 Ok";
 				$this->response->headers["Content-Type"] = "text/plain";
+				$this->response->headers["Cache-Control"]="no-cache";
 				$this->response->response_body = "Resource Removed";
 			} else {
 				// no atom entry
