@@ -1,9 +1,12 @@
 <?php
 
-require_once("app_mimetype.php");
-require_once("app_uri_handler.php");
+require_once("appmimetype.php");
+require_once("appuri.php");
 
-class App_Servicedoc {
+require_once("httpresponse.php");
+require_once("httpresource.php");
+
+class App_Servicedoc extends HTTPResource{
 	
 	private $filename;
 	private $doc;
@@ -11,13 +14,16 @@ class App_Servicedoc {
 	public $collection_specific_dir;
 	
 	public function __construct($filename, $base_uri) {
+		$uri = $base_uri->resolve("service");
+		parent::__construct($uri);
+	
 		$this->filename = $filename;
 		$this->base_uri = $base_uri;
 	}
 	
 	// $name is a full URI
-	public function collection_exists($name) {
-		$col = $this->find_collection($name);
+	public function collection_exists($uri) {
+		$col = $this->find_collection($uri);
 		if ( $col !== FALSE ) {
 			return TRUE;
 		} else {
@@ -35,25 +41,21 @@ class App_Servicedoc {
 		$this->doc->save($this->filename);
 	}
 	
-	public function mimetype_accepted($mimetype, $collection_name) {
+	public function mimetype_accepted($mimetype, $collection_uri) {
 		if ( !isset($this->doc) ) {
-			$this->doc = DOMDocument::load($this->filename);
+			$this->get_servicedoc();
 		}
 		$cols = $this->doc->getElementsByTagNameNS("http://www.w3.org/2007/app","collection");
 		
-		$mime_test = new App_Mimetype($mimetype);
-		$urih = new App_Uri_Handler();
-		$service_base = $this->base_uri;
-		
 		foreach ( $cols as $col ) {
-			if ( $urih->resolve_uri($col->getAttributeNode("href"),$service_base) == $collection_name ) {
+			if ( URI::resolve_node($col->getAttributeNode("href"),$this->uri) == $collection_uri ) {
 				
 				$accepts = $col->getElementsByTagNameNS("http://www.w3.org/2007/app","accept");
 				
 				// No accepts -> only application/atom+xml is allowed
 				if ($accepts->length == 0) {
 					$accepted_type = new App_Mimetype("application/atom+xml");
-					if ( $mime_test->is_a($accepted_type) ) {
+					if ( $mimetype->is_a($accepted_type) ) {
 						return TRUE;
 					}
 				}
@@ -70,7 +72,7 @@ class App_Servicedoc {
 					
 					$accepted_type = new App_Mimetype($accepted_text);
 					
-					if ( $mime_test->is_a($accepted_type) ) {
+					if ( $mimetype->is_a($accepted_type) ) {
 						return TRUE;
 					}
 				}
@@ -152,21 +154,42 @@ class App_Servicedoc {
 	
 	private function find_collection($uri) {
 		if ( !isset($this->doc) ) {
-			$this->doc = DOMDocument::load($this->filename);
+			$this->get_servicedoc();
 		}
 		$cols = $this->doc->getElementsByTagNameNS("http://www.w3.org/2007/app","collection");
 		
-		$urih = new App_Uri_Handler();
-		$service_base = $this->base_uri;
-		
 		foreach ( $cols as $col ) {
-			if ( $urih->resolve_uri($col->getAttributeNode("href"),$service_base) == $uri ) {
+			if ( URI::resolve_node($col->getAttributeNode("href"),$this->uri) == $uri ) {
 				return $col;
 			}
 		}
 		
 		return FALSE;
 	}
+	
+	/*
+	 * HTTP methods
+	 */
+	 
+	 public function http_GET($request) {
+	 	$response = new HTTPResponse();
+		
+		$etag = '"'.md5(filemtime($this->filename)).'"';
+		
+		if ( $this->try_cache($request, $response, array("ETag" => $etag)) ) {
+			return $response;
+		}
+		
+		$response->http_status = "200 Ok";
+		$response->response_body = file_get_contents($this->filename);
+		
+		$response->headers["Content-Type"] = "application/atomsvc+xml";
+		$response->headers['Cache-Control'] = "must-revalidate";
+		$response->headers['ETag'] = $etag;
+		
+		$this->try_gzip($request, $response);
+		
+		return $response;
+	 }
 }
 
-?>

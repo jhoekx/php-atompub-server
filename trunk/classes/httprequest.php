@@ -1,12 +1,18 @@
 <?php
 
-class App_Request {
+require_once("appuri.php");
+
+class HTTPRequest {
 
 	public $headers = array();
 	
 	public $method;
 	public $request_uri;
 	public $request_body;
+	
+	public function header_exists($name) {
+		return array_key_exists($name, $this->headers);
+	}
 	
 	public function fill_from_server() {
 		// Content-Type
@@ -38,7 +44,8 @@ class App_Request {
 		
 		// Request-URI
 		if ( array_key_exists("REQUEST_URI",$_SERVER) ) {
-			$this->request_uri = $_SERVER["REQUEST_URI"];			
+			$this->request_uri = 
+				new URI("http://".$_SERVER["HTTP_HOST"].$_SERVER['REQUEST_URI']);			
 		}
 		// Request
 		$this->method = $_SERVER["REQUEST_METHOD"];
