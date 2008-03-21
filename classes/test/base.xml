@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:base="http://www.example.org/index">
+
+<head><title>XML:base test</title></head>
+
+<body xml:base="niks/body">
+<p><a href="test/">http://www.example.org/niks/test/</a></p>
+<p><a href="/test/">http://www.example.org/test/</a></p>
+<p xml:base="../test2/"><a href="../../test/">http://www.example.org/test/</a></p>
+</body>
+</html>
