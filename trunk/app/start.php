@@ -9,10 +9,12 @@ require_once("../classes/httprequest.php");
 require_once("../classes/httpresponse.php");
 require_once("../classes/httpexception.php");
 
-$store = new App_FileStore("store");
 
 $base_uri = new URI("http://localhost/appv2/app/");
 //$base_uri = new URI("http://dev.hamok.be/app/");
+
+$store = new App_FileStore("store", $base_uri);
+
 $server = new App_Server($store, $base_uri);
 
 $request = new HTTPRequest();
