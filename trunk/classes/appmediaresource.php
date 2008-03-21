@@ -31,8 +31,13 @@ class App_MediaResource extends App_Entry {
 		$this->store->store($key, $this->content);
 	}
 	public function update($content) {
-		$this->collection->update_entry($this);
-	
+		
+		// get media link entry
+		$link_uri = new URI(str_replace(".".$this->extension,".atomentry",$this->uri));
+		$medialink = $this->collection->get_entry($link_uri);
+		
+		$medialink->update($medialink->get_document());
+		
 		$this->content = $content;
 		
 		$this->collection->on_entry_update($this);
