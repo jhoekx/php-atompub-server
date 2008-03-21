@@ -2,8 +2,6 @@
 
 require_once("httpresponse.php");
 
-require_once("appacceptencoding.php");
-
 class HTTPResource {
 	
 	public $uri;
@@ -53,9 +51,8 @@ class HTTPResource {
 	
 	public function try_gzip($request, $response) {
 		if ( array_key_exists("Accept-Encoding", $request->headers) ){
-			$accepted = new App_Accept_Encoding($request->headers["Accept-Encoding"]);
 			
-			$pref = $accepted->preferred( array("gzip"=>1,"identity"=>0.5) );
+			$pref = $request->preferred_encoding( array("gzip"=>1,"identity"=>0.5) );
 			if ($pref == "gzip") {
 				$response->response_body = gzencode($response->response_body);
 				$response->headers["Content-Encoding"] = "gzip";
