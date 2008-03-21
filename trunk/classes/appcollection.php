@@ -52,7 +52,7 @@ class App_Collection extends Atom_Feed {
 	public function get_entry($uri) {
 		$r_uri = $uri->base_on($this->uri);
 
-		if (!$this->store->exists("/".$this->name."/files/".$r_uri->to_string())) {
+		if (!$this->store->exists($uri)) {
 			throw new HTTPException("Resource does not exist.",404);
 		}
 		
@@ -109,7 +109,7 @@ class App_Collection extends Atom_Feed {
 		
 		$this->save_collection_list($list);
 		$this->update_pages();
-		$entry->save($this->store);
+		$entry->save();
 	}
 	
 	public function update_entry($entry) {
@@ -159,7 +159,7 @@ class App_Collection extends Atom_Feed {
 	 */
 	protected function parse_slug($request) {
 		// Get a name from the Slug header
-		if ( array_key_exists("Slug", $request->headers) ) {
+		if ( $request->header_exists("Slug") ) {
 			$name = rawurlencode(
 						preg_replace(
 							"/([\;\/\?\:\@\&\=\+\$\, ])/",

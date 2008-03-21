@@ -25,8 +25,8 @@ class FeedSerializer {
 		$this->serializeElement($doc->documentElement, "http://www.w3.org/2005/Atom");
 		
 		$nslist = ' xmlns="http://www.w3.org/2005/Atom"';
-		foreach ( array_keys($this->namespaces) as $ns ) {
-			$nslist = $nslist. ' xmlns:'.$this->namespaces[$ns].'="'.$ns.'"';
+		foreach ( $this->namespaces as $ns=>$ns_prefix ) {
+			$nslist = $nslist. ' xmlns:'.$ns_prefix.'="'.$ns.'"';
 		}
 		$this->result[1] = '<'.$doc->documentElement->localName.$nslist;
 		

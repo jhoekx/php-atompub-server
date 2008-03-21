@@ -14,9 +14,8 @@ class App_MediaResource extends App_Entry {
 	
 	public function get_content() {
 		if ( !isset($this->content) ) {
-			$key = "/".$this->collection->name."/files/".$this->name.".".$this->extension;
 
-			$data = $this->store->get($key);
+			$data = $this->store->get($this->uri);
 			if ($data == "") {
 				throw new HTTPException("Error loading data.",500);
 			}
@@ -27,8 +26,7 @@ class App_MediaResource extends App_Entry {
 	}
 	
 	public function save() {
-		$key = "/".$this->collection->name."/files/".$this->name.".".$this->extension;
-		$this->store->store($key, $this->content);
+		$this->store->store($this->uri, $this->content);
 	}
 	public function update($content) {
 		
@@ -45,10 +43,6 @@ class App_MediaResource extends App_Entry {
 		$this->save();
 	}
 	
-	protected function last_modified() {
-			$key = "/".$this->collection->name."/files/".$this->name.".".$this->extension;
-			return $this->store->modified($key);
-	}
 	
 	public function http_GET($request) {
 		$response = new HTTPResponse();

@@ -50,7 +50,7 @@ class HTTPResource {
 	}
 	
 	public function try_gzip($request, $response) {
-		if ( array_key_exists("Accept-Encoding", $request->headers) ){
+		if ( $request->header_exists("Accept-Encoding") ){
 			
 			$pref = $request->preferred_encoding( array("gzip"=>1,"identity"=>0.5) );
 			if ($pref == "gzip") {
@@ -58,7 +58,7 @@ class HTTPResource {
 				$response->headers["Content-Encoding"] = "gzip";
 				$response->headers["Vary"] = "Content-Encoding";
 				
-				if ( array_key_exists("ETag",$response->headers) ) {
+				if ( $response->header_exists("ETag") ) {
 					$response->headers['ETag'] = 
 						'"'.str_replace("\"","",$response->headers['ETag']).
 						";".$response->headers["Content-Encoding"].'"';
@@ -75,19 +75,19 @@ class HTTPResource {
 			$last_modified = $cache["Last-Modified"];
 		}
 	
-		if ( array_key_exists('If-None-Match',$request->headers) && isset($etag) ) {
+		if ( $request->header_exists("If-None-Match") && isset($etag) ) {
 			$req_etag = str_replace(";gzip","",$request->headers['If-None-Match']);
 
 			if ( $etag == $req_etag ) {
 				
 				$response->http_status = "304 Not Modified";
 				
-				if ( !array_key_exists("Cache-Control",$response->headers) ) {
+				if ( !$response->header_exists("Cache-Control") ) {
 					$response->headers['Cache-Control'] = "must-revalidate";
 				}
 				
 				// ETag for GZipped version should be different
-				if ( array_key_exists("Content-Encoding",$response->headers) ) {
+				if ( $response->header_exists("Content-Encoding") ) {
 					$etag = '"'.str_replace("\"","",$etag).";".$response->headers["Content-Encoding"].'"';
 				}
 				
@@ -99,19 +99,19 @@ class HTTPResource {
 				$response->response_body = "";
 				return TRUE;
 			}
-		} else if ( array_key_exists('If-Modified-Since',$request->headers) && isset($last_modified) ) {
-			$req_mod = strtotime($request->headers['If-Modified-Since']);
+		} else if ( $request->header_exists("If-Modified-Since") && isset($last_modified) ) {
+			$req_mod = strtotime($request->headers["If-Modified-Since"]);
 			
 			if ( $req_mod >= strtotime($last_modified) ) {
 				$response->http_status = "304 Not Modified";
 				
-				if ( !array_key_exists("Cache-Control",$response->headers) ) {
+				if ( !$response->header_exists("Cache-Control") ) {
 					$response->headers['Cache-Control'] = "must-revalidate";
 				}
 				
 				if (isset($etag)) {
 					// ETag for GZipped version should be different
-					if ( array_key_exists("Content-Encoding",$response->headers) ) {
+					if ( $response->header_exists("Content-Encoding") ) {
 						$etag = '"'.str_replace("\"","",$etag).";".$response->headers["Content-Encoding"].'"';
 					}
 					
