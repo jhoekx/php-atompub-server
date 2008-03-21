@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service xmlns="http://www.w3.org/2007/app"
+         xmlns:atom="http://www.w3.org/2005/Atom"
+>
+<workspace>
+	<atom:title>PHP Atompub Server</atom:title>
+
+	<collection href="test/">
+		<atom:title>Atompub Test: Test</atom:title>
+		<accept>*/*</accept>
+	</collection>
+	
+	<collection href="news/">
+		<atom:title>Atompub Test: News</atom:title>
+	</collection>
+	
+	<collection href="lim/">
+		<atom:title>Atompub Test: Limited</atom:title>
+		<accept>text/html</accept>
+	</collection>
+
+</workspace>
+</service>
