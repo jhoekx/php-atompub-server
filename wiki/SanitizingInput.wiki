@@ -7,6 +7,8 @@ This document describes a way to sanitize input to a collection. It uses [http:/
 
 = Details =
 
-Download the [http://php-atompub-server.googlecode.com/svn/trunk/examples/collectionspecific/ example file] for the `news` collection from the subversion repository.
+Download the [http://php-atompub-server.googlecode.com/svn/trunk/app/templates/ example file] for the `news` collection `(collection_news.php)` from the subversion repository.
 
-After the creation of the App_Servicedoc object, `the collection_specific_dir` member should point to the directory where the `news.php` file exists. Now all requests for the `news` collection pass through that file. Note that it's best to only load HTMLPurifier when it's really needed. It requires a lot of memory.
+Download HTMLPurifier and save it in the `templates` directory.
+
+All requests for the `news` collection pass through that file. Note that it's best to only load HTMLPurifier when it's really needed. It requires a lot of memory.
