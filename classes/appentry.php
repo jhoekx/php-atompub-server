@@ -24,16 +24,14 @@ class App_Entry extends HTTPResource {
 	}
 	
 	public function save() {
-		$key = "/".$this->collection->name."/files/".$this->name.".atomentry";
 		$fs = new FeedSerializer();
-		$this->store->store($key, $fs->writeToString($this->get_document()));
+		$this->store->store($this->uri, $fs->writeToString($this->get_document()));
 	}
 	
 	public function get_document() {
 		if ( !isset($this->doc) ) {
-			$key = "/".$this->collection->name."/files/".$this->name.".atomentry";
 
-			$data = $this->store->get($key);
+			$data = $this->store->get($this->uri);
 			if ($data == "") {
 				throw new HTTPException("Error loading document.",500);
 			}
@@ -73,8 +71,6 @@ class App_Entry extends HTTPResource {
 		
 		$this->collection->on_entry_remove($this);
 		
-		$key = "/".$this->collection->name."/files/".$this->name.".atomentry";
-		
 		if ( $this->is_media_link() ) {
 			$content = $this->get_document()->
 				getElementsByTagNameNS("http://www.w3.org/2005/Atom","content")->item(0);
@@ -82,15 +78,15 @@ class App_Entry extends HTTPResource {
 			$mime_t = new App_Mimetype($content->getAttribute("type"));
 			$extension = $mime_t->get_extension();
 			
-			$this->store->remove("/".$this->collection->name."/files/".$this->name.".".$extension);
+			$key = str_replace(".atomentry",".".$extension,$this->uri);
+			$this->store->remove($key);
 		}
 		
-		$this->store->remove($key);
+		$this->store->remove($this->uri);
 	}
 	
 	protected function last_modified() {
-		$key = "/".$this->collection->name."/files/".$this->name.".atomentry";
-		return $this->store->modified($key);
+		return $this->store->modified($this->uri);
 	}
 	
 	public function is_media_link() {

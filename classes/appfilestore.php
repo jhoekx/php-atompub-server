@@ -3,8 +3,10 @@
 class App_FileStore {
 
 	private $dir;
+	private $base_uri;
 
-	public function __construct($dir) {
+	public function __construct($dir, $base_uri) {
+		$this->base_uri = $base_uri;
 		$this->dir = $dir;
 		if (!file_exists($dir)) {
 			mkdir($dir);
@@ -12,6 +14,8 @@ class App_FileStore {
 	}
 	
 	public function store($uri, $data) {
+		$uri = $this->get_key($uri);
+		
 		$parts = split("/",$uri);
 		
 		$filename = array_pop($parts);
@@ -28,6 +32,8 @@ class App_FileStore {
 	}
 	
 	public function get($uri) {
+		$uri = $this->get_key($uri);
+		
 		if ( file_exists($this->dir.$uri) ) {
 			return file_get_contents($this->dir.$uri);
 		} else {
@@ -36,6 +42,7 @@ class App_FileStore {
 	}
 	
 	public function modified($uri) {
+		$uri = $this->get_key($uri);
 		if ( file_exists($this->dir.$uri) ) {
 			return filemtime($this->dir.$uri);
 		} else {
@@ -43,15 +50,19 @@ class App_FileStore {
 		}
 	}
 	public function exists($uri) {
+		$uri = $this->get_key($uri);
+
 		return file_exists($this->dir.$uri);
 	}
 	
 	public function remove($uri) {
+		$uri = $this->get_key($uri);
 		if ( file_exists($this->dir.$uri) ) {
 			unlink($this->dir.$uri);
 		}
 	}
 	public function remove_dir($uri) {
+		$uri = $this->get_key($uri);
 		$key = $this->dir.$uri;
 		if ( file_exists($key) ) {
 		
@@ -65,6 +76,16 @@ class App_FileStore {
 			
 			rmdir($key);
 		}
+	}
+	
+	private function get_key($uri) {
+		$uri = new URI($uri);
+		$uri = $uri->base_on($this->base_uri);
+		$uri = new URI("/".$uri);
+		if ( strpos($uri, "\.\.") !== FALSE ) {
+			throw new Exception("Invalid uri passed to store.");
+		}
+		return $uri;
 	}
 
 }

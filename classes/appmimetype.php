@@ -1,14 +1,14 @@
 <?php
 /**
  * Class definition of the App_Mimetype class
- * @package PAPPI
+ * @package php-atompub-server
  */
 
 /**
  * The App_Mimetype class
  *
  * All mimetype related things.
- * @package PAPPI
+ * @package php-atompub-server
  */
 class App_Mimetype {
 	
@@ -32,11 +32,11 @@ class App_Mimetype {
 		"bin" => "application/octet-stream");
 	
 	/**
-	 * Create a new Media type object.
+	 * Create a new Media Type object.
 	 *
 	 * @param string $input The full Content-type header as defined in 
 	 * {@link http://tools.ietf.org/html/rfc2045#section-5RFC 2045} or an
-	 * extension, without the dot.
+	 * extension, without the dot. Defaults to application/octet-stream.
 	 */
 	public function __construct($input) {
 		if ( strpos($input, "/") === FALSE ) {
@@ -109,6 +109,11 @@ class App_Mimetype {
 		return TRUE;
 	}
 	
+	/**
+	 * Get the extension associated with this media type.
+	 *
+	 * @return string The extension, without a dot.
+	 */
 	public function get_extension() {
 		$mimetest = $this->type."/".$this->subtype;
 		
@@ -123,14 +128,19 @@ class App_Mimetype {
 		}
 	}
 	
+	/**
+	 * Check if a parameter was given with the media type
+	 * @param string $name The name of the parameter to check
+	 * @return boolean The existence of the parameter
+	 */
 	public function parameter_exists($name) {
 		return array_key_exists($name, $this->parameters);
 	}
 	
 	public function to_string() {
 		$str = $this->type."/".$this->subtype;
-		foreach( array_keys($this->parameters) as $param ) {
-			$str = $str . "; ".$param."=".$this->parameters[$param];
+		foreach( $this->parameters as $param=>$value ) {
+			$str = $str . "; ".$param."=".$value;
 		}
 		return $str;
 	}

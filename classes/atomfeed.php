@@ -90,7 +90,7 @@ class Atom_Feed extends HTTPResource {
 			throw new HTTPException("Collection does not exist.",404);
 		}
 		
-		$key = "/".$this->name."/pages/".$pagenr.".atom";
+		$key = $this->base_uri.$this->name."/pages/".$pagenr.".atom";
 		if ( !$this->store->exists($key) ) {
 			$doc = $this->create_page($pagenr);
 			
@@ -217,7 +217,8 @@ class Atom_Feed extends HTTPResource {
 	}
 	
 	protected function get_collection_list() {
-		$js = $this->store->get("/".$this->name."/list.json");
+		$key = $this->base_uri.$this->name."/list/list.json";
+		$js = $this->store->get($key);
 		if ($js != "") {
 			$entries = json_decode($js, TRUE);
 		} else {
@@ -227,10 +228,10 @@ class Atom_Feed extends HTTPResource {
 	}
 	protected function save_collection_list($list) {
 		$js = json_encode($list);
-		$this->store->store("/".$this->name."/list.json",$js);
+		$this->store->store($this->base_uri.$this->name."/list/list.json",$js);
 	}
 	protected function list_last_modified() {
-		$key = "/".$this->name."/list.json";
+		$key = $this->base_uri.$this->name."/list/list.json";
 		if ( $this->store->exists($key) ) {
 			return $this->store->modified($key);
 		} else {
@@ -238,7 +239,7 @@ class Atom_Feed extends HTTPResource {
 		}
 	}
 	protected function update_pages() {
-		$this->store->remove_dir("/".$this->name."/pages/");
+		$this->store->remove_dir($this->base_uri.$this->name."/pages/");
 	}
 	
 	/*
