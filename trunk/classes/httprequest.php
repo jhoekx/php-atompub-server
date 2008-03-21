@@ -1,19 +1,37 @@
 <?php
-
+/**
+ * Class definition of the HTTPRequest class
+ * @package php-atompub-server
+ */
+ 
 require_once("appuri.php");
 
+/**
+ * The HTTPRequest class
+ *
+ * Fields and some utility methods for an HTTP request.
+ * @package php-atompub-server
+ */
 class HTTPRequest {
-
+	
 	public $headers = array();
 	
 	public $method;
 	public $request_uri;
 	public $request_body;
 	
+	/**
+	 * Check if a given header exists in the request
+	 * @param string $name The name of the HTTP header
+	 * @return boolean The existence of a header
+	 */
 	public function header_exists($name) {
 		return array_key_exists($name, $this->headers);
 	}
 	
+	/**
+	 * Fill the fields with values from the server
+	 */
 	public function fill_from_server() {
 		// Content-Type
 		if ( array_key_exists("CONTENT_TYPE",$_SERVER) ) {
@@ -53,6 +71,68 @@ class HTTPRequest {
 		if ($this->method == "POST" || $this->method == "PUT") {
 			$this->request_body = file_get_contents("php://input");
 		}
+	}
+	
+	/**
+	 * Check if which of several encodings is preferred in the response.
+	 *
+	 * @param array $arr The server defined values, e.g. array("gzip"=>1,"identity"=>0.5)
+	 * @return string  $pref The preferred encoding.
+	 */
+	public function preferred_encoding($arr) {
+		if ( !$this->header_exists("Accept-Encoding") ) {
+			return "identity";
+		}
+		$codings = $this->parse_accept_encoding();
+	
+		$keys = array_keys($arr);
+		$matches = array();
+		
+		foreach ( $keys as $key ) {
+			if ( array_key_exists($key, $codings) ) {
+				$matches[$key] = $arr[$key] * $codings[$key];
+			}
+		}
+		
+		if ( count($matches) > 0 ) {
+			arsort($matches);
+			$sorted_keys = array_keys($matches);
+			
+			if ($matches[ $sorted_keys[0] ] > 0.0001) {
+				return $sorted_keys[0];
+			}
+		}
+		
+		return "identity";
+	}
+	/**
+	 * Parse the accept-encoding HTTP header.
+	 * @return array the accepted encodings, with their q-values
+	 */
+	private function parse_accept_encoding() {
+		$header = $this->headers["Accept-Encoding"];
+		
+		$encodings = explode(",", str_replace(" ","",strtolower($header)) );
+		
+		$codings = array();
+		
+		foreach ( $encodings as $encoding ) {
+			$split = explode(";",$encoding);
+			
+			if ( is_array($split) && count($split) > 1 ) {
+				$coding = $split[0];
+				
+				$qvalues = explode("=",$split[1]);
+				$qvalue = $qvalues[1];
+				
+				$codings[$coding] = (float)$qvalue;
+			} else {
+				$coding = $split[0];
+				$codings[$coding] = 1;
+			}
+		}
+		
+		return $codings;
 	}
 }
 
