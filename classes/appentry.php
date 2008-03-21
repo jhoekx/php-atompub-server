@@ -49,6 +49,17 @@ class App_Entry extends HTTPResource {
 		$cleaner->make_conforming($document);
 		$cleaner->check_edit_links($document, $this->get_document());
 		
+		// app:edited
+		$edits = $document->getElementsByTagNameNS("http://www.w3.org/2007/app","edited");
+		foreach ($edits as $edit) {
+			$edits->item(0)->parentNode->removeChild($edits->item(0));
+		}
+		
+		$edit = $document->createElementNS("http://www.w3.org/2007/app","app:edited");
+		$edit->appendChild( $document->createTextNode(date(DATE_ATOM,time())) );
+		$document->documentElement->appendChild($edit);
+
+		
 		$this->doc = $document;
 		
 		$this->collection->on_entry_update($this);

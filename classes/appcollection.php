@@ -262,6 +262,11 @@ class App_Collection extends Atom_Feed {
 		$doc->getElementsByTagName("link")->item(0)->setAttribute("href",$media_resource_uri);
 		$doc->getElementsByTagName("link")->item(1)->setAttribute("href",$media_link_uri);
 		
+		// app:edited
+		$edit = $doc->createElementNS("http://www.w3.org/2007/app","app:edited");
+		$edit->appendChild( $doc->createTextNode(date(DATE_ATOM,time())) );
+		$doc->documentElement->appendChild($edit);
+		
 		// media link entry
 		$media_link = new App_Entry($media_link_uri, $this);
 		$media_link->doc = $doc;
