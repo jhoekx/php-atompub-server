@@ -11,7 +11,7 @@ This document shows how to quickly setup a server for testing. There is no authe
 Check out the latest version of the server software from [http://code.google.com/p/php-atompub-server/source subversion].
 
 == Setting up ==
-The example code is in the [http://php-atompub-server.googlecode.com/svn/trunk/app/ subversion repo]. Save it somewhere where it's web-accessible in Apache.
+The example code is in the [http://php-atompub-server.googlecode.com/svn/trunk/app/ subversion repo]. Save it somewhere where it's web-accessible in Apache. Don't forget the `templates` directory!
 
 Now edit the `.htaccess` file of the directory where you've installed the server:
 {{{
