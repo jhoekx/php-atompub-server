@@ -50,3 +50,33 @@ class App_Collection_test extends App_Collection {
 }}}
 
 This class will be used for all operations in the "test" collection. It does two things: a link to a webpage is added to the entry and the naming conventions for entries in the collection are changed.
+
+The link is added using the event system, while the naming is done by overriding an existing method.
+
+The event system is similar to the one used in DOM 2 Events. An `EventListener` is registered on the collection. It includes the name of the event we're interested in and the object and methodname we want to have called when the event takes place.
+
+The eventhandler method will receive an `Event` object. These come in two varieties: the HTTPEvent and the APPEvent. Each contains the name of the event.
+
+The HTTPEvent object has the `HTTPRequest` and `HTTPResponse` objects used for handling this request. One can use the HTTPResponse to add extra long caching headers to images in a collection for example. HTTPEvents are fired before the response is returned.
+
+An APPEvent object contains an App_Entry object. This makes it possible to change parts of a document. They are fired after php-atompub-server is done handling the entry, but before the entry is saved.
+
+An entry will dispatch the following events:
+  * APPEvent "entry_update"
+  * APPEvent "entry_remove"
+  * HTTPEvent "entry_get"
+  * HTTPEvent "entry_put"
+  * HTTPEvent "entry_delete"
+
+A collection dispatches these events:
+  * APPEvent "entry_open"
+  * APPEvent "entry_create"
+  * HTTPEvent "collection_get"
+  * HTTPEvent "collection_post"
+
+Additionally, all events dispatched by the entry will also be dispatched to the collection. This means you can listen for "entry_put" on a collection.
+
+= Custom Store =
+Adding a custom store allows you to operate on other resources than just files. Let `php-atompub-server` do the AtomPub work and you'll be handed in a nice Atom entry to save to your backend database. 
+
+Beware however: the pages of a collection feed are also stored in the FileStore. Make sure you're able to handle them as well!
