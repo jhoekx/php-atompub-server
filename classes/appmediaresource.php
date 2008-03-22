@@ -38,7 +38,7 @@ class App_MediaResource extends App_Entry {
 		
 		$this->content = $content;
 		
-		$this->collection->on_entry_update($this);
+		$this->dispatchEvent( new APPEvent("entry_update", $this) );
 		
 		$this->save();
 	}
@@ -69,7 +69,7 @@ class App_MediaResource extends App_Entry {
 		$response->headers["Last-Modified"] = $last_modified;
 		$response->response_body = $this->get_content();
 		
-		$this->collection->on_entry_get($request, $response);
+		$this->dispatchEvent( new HTTPEvent("entry_get", $request, $response) );
 		
 		return $response;
 	}
@@ -107,7 +107,7 @@ class App_MediaResource extends App_Entry {
 		$this->response->http_status = "200 Ok";
 		$this->response->response_body = "";
 		
-		$this->collection->on_entry_put($request, $response);
+		$this->dispatchEvent( new HTTPEvent("entry_put", $request, $response) );
 		
 		return $response;
 	}

@@ -1,12 +1,12 @@
 <?php
 
-require_once("httpresource.php");
+require_once("appevents.php");
 require_once("httpresponse.php");
 
 require_once("appcleaner.php");
 require_once("feedserializer.php");
 
-class App_Entry extends HTTPResource {
+class App_Entry extends EventHTTPResource {
 	
 	protected $collection;
 	
@@ -60,16 +60,14 @@ class App_Entry extends HTTPResource {
 		
 		$this->doc = $document;
 		
-		$this->collection->on_entry_update($this);
+		$this->dispatchEvent( new APPEvent("entry_update", $this) );
 		
 		$this->save();
-		$this->collection->update_entry($this);
 	}
 	
 	public function delete() {
-		$this->collection->remove_entry($this);
 		
-		$this->collection->on_entry_remove($this);
+		$this->dispatchEvent( new APPEvent("entry_remove", $this) );
 		
 		if ( $this->is_media_link() ) {
 			$content = $this->get_document()->
@@ -143,7 +141,7 @@ class App_Entry extends HTTPResource {
 		$response->headers["Last-Modified"] = $last_modified;
 		$response->response_body = $this->get_document()->saveXML();
 		
-		$this->collection->on_entry_get($request, $response);
+		$this->dispatchEvent( new HTTPEvent("entry_get", $request, $response) );
 		
 		$this->try_gzip($request, $response);
 		
@@ -176,7 +174,7 @@ class App_Entry extends HTTPResource {
 		$this->response->http_status = "200 Ok";
 		$this->response->response_body = "";
 		
-		$this->collection->on_entry_put($request, $response);
+		$this->dispatchEvent( new HTTPEvent("entry_put", $request, $response) );
 		
 		return $response;
 	}
@@ -191,7 +189,7 @@ class App_Entry extends HTTPResource {
 		$response->headers["Cache-Control"]="no-cache";
 		$response->response_body = "Resource Removed";
 		
-		$this->collection->on_entry_delete($request, $response);
+		$this->dispatchEvent( new HTTPEvent("entry_delete", $request, $response) );
 		
 		return $response;
 	}

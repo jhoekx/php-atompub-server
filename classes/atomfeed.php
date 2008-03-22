@@ -3,13 +3,14 @@
 require_once("appfilestore.php");
 require_once("appentry.php");
 
+require_once("appevents.php");
+
 require_once("httpresponse.php");
-require_once("httpresource.php");
 require_once("httpexception.php");
 
 require_once("feedserializer.php");
 
-class Atom_Feed extends HTTPResource {
+class Atom_Feed extends EventHTTPResource {
 	
 	public $name;
 	public $base_uri;
@@ -60,7 +61,7 @@ class Atom_Feed extends HTTPResource {
 		if ( $this->try_cache($request, $response, 
 			array("ETag" => $etag, "Last-Modified" => $last_modified)) ) 
 		{
-			$this->on_collection_get($request, $response);
+			$this->dispatchEvent( new HTTPEvent("collection_get", $request, $response) );
 			return $response;
 		}
 
@@ -74,7 +75,7 @@ class Atom_Feed extends HTTPResource {
 		$response->headers["Last-Modified"] = $last_modified;
 		$response->response_body = $data;
 		
-		$this->on_collection_get($request, $response);
+		$this->dispatchEvent( new HTTPEvent("collection_get", $request, $response) );
 		
 		$this->try_gzip($request, $response);
 		

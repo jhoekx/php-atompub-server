@@ -41,7 +41,7 @@ class App_Collection extends Atom_Feed {
 		$fs = new FeedSerializer();
 		$response->response_body = $fs->writeToString($entry->get_document());
 		
-		$this->on_collection_post($request, $response);
+		$this->dispatchEvent( new HTTPEvent("collection_post", $request, $response) );
 		
 		return $response;
 	}
@@ -62,7 +62,9 @@ class App_Collection extends Atom_Feed {
 			$entry = new App_MediaResource($uri, $this);
 		}
 		
-		$this->on_entry_open($entry);
+		$this->attachEvents($entry);
+		
+		$this->dispatchEvent( new APPEvent("entry_open", $entry) );
 		
 		return $entry;
 	}
@@ -87,16 +89,16 @@ class App_Collection extends Atom_Feed {
 			$entry = $this->create_media_resource($name, $data, $content_type);
 		}
 		
-		$this->on_entry_create($entry);
+		$this->attachEvents($entry);
 		
-		// Success
-		$this->add_entry($entry);
+		$this->dispatchEvent( new APPEvent("entry_create", $entry) );
 		
 		return $entry;
 	}
 	
-	public function add_entry($entry) {
+	public function add_entry($event) {
 		$list = $this->get_collection_list();
+		$entry = $event->entry;
 		
 		// check if the entry already exists
 		foreach( $list as $item ) {
@@ -109,11 +111,13 @@ class App_Collection extends Atom_Feed {
 		
 		$this->save_collection_list($list);
 		$this->update_pages();
-		$entry->save();
+		
+		$entry->save(); // save only if everything successful.
 	}
 	
-	public function update_entry($entry) {
+	public function update_entry($event) {
 		$list = $this->get_collection_list();
+		$entry = $event->entry;
 		
 		// find entry
 		for ($i=0; $i<count($list); $i++) {
@@ -133,8 +137,9 @@ class App_Collection extends Atom_Feed {
 		$this->update_pages();
 	}
 	
-	public function remove_entry($entry) {
+	public function remove_entry($event) {
 		$list = $this->get_collection_list();
+		$entry = $event->entry;
 		
 		for ($i=0; $i<count($list); $i++) {
 			if ($list[$i]["URI"] == $entry->name ) {
@@ -287,29 +292,25 @@ class App_Collection extends Atom_Feed {
 	protected function give_name($slug) {
 		return $slug;
 	}
-	protected function on_collection_post($request, $response) {
 	
-	}
-	protected function on_entry_create($entry) {
-	
+	public function propagateEvent($event) {
+		$this->dispatchEvent($event);
 	}
 	
-	public function on_entry_open($entry) {
-	
-	}
-	public function on_entry_remove($entry) {
-	
-	}
-	public function on_entry_update($entry) {
-	
-	}
-	public function on_entry_get($request, $response) {
-	
-	}
-	public function on_entry_delete($request, $response) {
-	
-	}
-	public function on_entry_put($request, $response) {
-	
+	protected function attachEvents($entry) {
+		$events = array(
+			"entry_update",
+			"entry_remove",
+			"entry_get",
+			"entry_put",
+			"entry_delete"
+		);
+		foreach ($events as $event) {
+			$entry->addEventListener($event, $this, "propagateEvent");
+		}
+		
+		$this->addEventListener("entry_create", $this, "add_entry");
+		$entry->addEventListener("entry_update", $this, "update_entry");
+		$entry->addEventListener("entry_remove", $this, "remove_entry");
 	}
 }
