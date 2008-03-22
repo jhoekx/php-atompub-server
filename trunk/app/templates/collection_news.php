@@ -5,13 +5,17 @@ class App_Collection_news extends App_Collection {
 
 	public function __construct($name, $store, $service) {
 		parent::__construct($name, $store, $service);
+		
+		$this->addEventListener("entry_create", $this, "on_entry_create");
 	}
 	
 	public function give_name($slug) {
 		return date("Y")."/".date("m")."/".date("d")."/".$slug;
 	}
 	
-	public function on_entry_create($entry) {
+	public function on_entry_create($event) {
+		$entry = $event->entry;
+		
 		$doc = $entry->get_document();
 		
 		$link = $doc->createElementNS("http://www.w3.org/2005/Atom","link");
