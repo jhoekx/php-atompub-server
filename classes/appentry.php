@@ -83,7 +83,7 @@ class App_Entry extends EventHTTPResource {
 		$this->store->remove($this->uri);
 	}
 	
-	protected function last_modified() {
+	public function last_modified() {
 		return $this->store->modified($this->uri);
 	}
 	

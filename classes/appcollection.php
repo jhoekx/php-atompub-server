@@ -32,16 +32,25 @@ class App_Collection extends Atom_Feed {
 		$content_type = new App_Mimetype($request->headers["Content-Type"]);
 		
 		$entry = $this->create_entry($name, $request->request_body, $content_type);
-			
+		
+		$time = $entry->last_modified();
+		
+		$etag = '"'.md5($time).'"';
+		$last_modified = $this->time_to_gmt($time);
+		
 		$response->http_status = "201 Created";
 		$response->headers["Content-Type"] = $content_type;
 		$response->headers["Location"] = $entry->uri;
 		$response->headers["Content-Location"] = $entry->uri;
+		$response->headers["ETag"] = $etag;
+		$response->headers["Last-Modified"] = $last_modified;
 		
 		$fs = new FeedSerializer();
 		$response->response_body = $fs->writeToString($entry->get_document());
 		
 		$this->dispatchEvent( new HTTPEvent("collection_post", $request, $response) );
+		
+		$this->try_gzip($request, $response);
 		
 		return $response;
 	}
@@ -96,6 +105,17 @@ class App_Collection extends Atom_Feed {
 		return $entry;
 	}
 	
+	public function last_modified() {
+		return $this->list_last_modified();
+	}
+	
+	public function is_supported_media_type($content_type) {
+		return $this->service->mimetype_accepted($content_type, $this->uri);
+	}
+	
+	/*
+	 * To maintain collection state.
+	 */
 	public function add_entry($event) {
 		$list = $this->get_collection_list();
 		$entry = $event->entry;
@@ -155,10 +175,6 @@ class App_Collection extends Atom_Feed {
 		$this->update_pages();
 	}
 	
-	public function last_modified() {
-		return $this->list_last_modified();
-	}
-	
 	/*
 	 * Entry Creation
 	 */
@@ -180,9 +196,7 @@ class App_Collection extends Atom_Feed {
 		}
 		return utf8_encode($name);
 	}
-	protected function is_supported_media_type($content_type) {
-		return $this->service->mimetype_accepted($content_type, $this->uri);
-	}
+	
 	protected function mimetype_is_atom($content_type) {
 		return !(stristr($content_type,"application/atom+xml") === FALSE);
 	}
