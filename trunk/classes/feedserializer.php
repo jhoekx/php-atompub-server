@@ -11,7 +11,8 @@ class FeedSerializer {
 		"http://www.w3.org/2007/app" => "app",
 		"http://www.w3.org/2000/svg" => "svg",
 		"http://www.w3.org/1999/xlink" => "xlink",
-		"http://www.w3.org/1998/Math/MathML" => "math"
+		"http://www.w3.org/1998/Math/MathML" => "math",
+		"http://purl.org/syndication/history/1.0" => "fh"
 	);
 	private $namespaces = array();
 	private $nscounter = 0;

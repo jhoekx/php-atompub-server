@@ -4,6 +4,7 @@ require_once("appfilestore.php");
 require_once("appentry.php");
 
 require_once("appevents.php");
+require_once("appuritemplate.php");
 
 require_once("httpresponse.php");
 require_once("httpexception.php");
@@ -33,25 +34,23 @@ class Atom_Feed extends EventHTTPResource {
 	
 	public function http_GET($request) {
 		$response = new HTTPResponse();
-	
-		$app_path = $this->uri->base_on( $this->base_uri );
-		$path = $app_path->components["path"];
 		
-		$parts = split("/",$path);
-		// Which page
-		if ( $parts[1] == "" ) {
+		$page_template = new App_URITemplate($this->base_uri.$this->name."/pages/{pagenr}");
+		$name_template = new App_URITemplate($this->base_uri.$this->name."/");
+
+		$name_match = $name_template->matches($this->uri);
+		if ( $name_match !== FALSE ) {
 			$page = 1;
-		} else {
-			$page = (int)$parts[1];
-			if ($page == 0 && $parts[1] !== "0" ) {
-				throw new HTTPException("Wrong routing.", 404);
-			} 
 			
-			if ($page == 0 ) {
-				$page = 0;
+		} else {
+			$page_match = $page_template->matches($this->uri);
+			if ( $page_match !== FALSE ) {
+				$page = (int)$page_match["pagenr"];
+			} else {
+				throw new HTTPException("Wrong routing.", 404);
 			}
 		}
-
+		
 		// Caching
 		$time = $this->last_modified();
 		
@@ -129,8 +128,8 @@ class Atom_Feed extends EventHTTPResource {
 		
 		for ($i=$start; $i<$end; $i++) {
 			$uri = new URI($list[$i]["URI"].".atomentry");
-			$uri->absolutize($this->uri);
-			
+			$uri->absolutize($this->base_uri.$this->name."/");
+
 			$entry = new App_Entry($uri, $this);
 
 			$this->add_entry_to_feed($entry->get_document(), $feed);
@@ -192,22 +191,26 @@ class Atom_Feed extends EventHTTPResource {
 			$complete = $feed->createElementNS("http://purl.org/syndication/history/1.0",
 													"fh:complete");
 			$feed->documentElement->appendChild($complete);
-			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/0");
+			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/pages/0");
 			return;
 		}
 		
 		$this->add_feed_link($feed, "first", $this->base_uri.$this->name."/");
 		if ( $nr_pages > 1 ) {
-			$this->add_feed_link($feed, "last", $this->base_uri.$this->name."/".$nr_pages);
+			$this->add_feed_link($feed, "last", $this->base_uri.$this->name."/pages/".$nr_pages);
 		}
 		if ($pagenr > 1) {
-			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/".$pagenr);
-			$this->add_feed_link($feed, "previous", $this->base_uri.$this->name."/".($pagenr-1));
+			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/pages/".$pagenr);
+			if ( $pagenr-1 === 1 ) {
+				$this->add_feed_link($feed, "previous", $this->base_uri.$this->name."/pages/");
+			} else {
+			  $this->add_feed_link($feed, "previous", $this->base_uri.$this->name."/pages/".($pagenr-1));
+			}
 		} else {
 			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/");
 		}
 		if ($pagenr < $nr_pages && $nr_pages > 1) {
-			$this->add_feed_link($feed, "next", $this->base_uri.$this->name."/".($pagenr+1));
+			$this->add_feed_link($feed, "next", $this->base_uri.$this->name."/pages/".($pagenr+1));
 		}
 	}
 	private function add_feed_link($feed, $rel, $href) {
