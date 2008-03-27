@@ -49,6 +49,10 @@ class FeedSerializer {
 				$default_ns = "http://www.w3.org/2005/Atom";
 				$this->result[] = ' xmlns="http://www.w3.org/2005/Atom"';
 			}
+			if ( $ns_uri == "" && $default_ns!=$ns_uri) {
+				$default_ns = "";
+				$this->result[] = ' xmlns=""';
+			}
 			
 		} else {
 			$this->result[] = '<'.$prefix.':'.$el->localName;
@@ -69,6 +73,10 @@ class FeedSerializer {
 					$this->result[] = " ".$atname.'="'.htmlspecialchars($attr->nodeValue).'"';
 				}
 			}
+		}
+		if ($el->childNodes->length === 0) {
+			$this->result[]="/>";
+			return;
 		}
 		
 		$this->result[] = ">";
