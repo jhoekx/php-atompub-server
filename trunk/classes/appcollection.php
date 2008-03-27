@@ -59,7 +59,7 @@ class App_Collection extends Atom_Feed {
 	 * Collection methods
 	 */
 	public function get_entry($uri) {
-		$r_uri = $uri->base_on($this->uri);
+		$r_uri = $uri->base_on($this->feed_uri);
 
 		if (!$this->store->exists($uri)) {
 			throw new HTTPException("Resource does not exist.",404);
@@ -80,7 +80,7 @@ class App_Collection extends Atom_Feed {
 	
 	public function create_entry($name, $data, $content_type) {
 		// Check if the collection exists
-		if ( !$this->service->collection_exists($this->uri) ) {
+		if ( !$this->service->collection_exists($this->feed_uri) ) {
 			throw new HTTPException("Collection does not exist.", 404);
 		}
 		
@@ -102,15 +102,13 @@ class App_Collection extends Atom_Feed {
 		
 		$this->dispatchEvent( new APPEvent("entry_create", $entry) );
 		
+		$entry->save(); // save only if everything successful.
+		
 		return $entry;
 	}
 	
-	public function last_modified() {
-		return $this->list_last_modified();
-	}
-	
 	public function is_supported_media_type($content_type) {
-		return $this->service->mimetype_accepted($content_type, $this->uri);
+		return $this->service->mimetype_accepted($content_type, $this->feed_uri);
 	}
 	
 	/*
@@ -127,12 +125,10 @@ class App_Collection extends Atom_Feed {
 			}
 		}
 		
-		array_push($list, array("URI"=>$entry->name, "Edit"=>time()) );
+		array_push($list, array("URI"=>$entry->uri->to_string(), "Edit"=>time()) );
 		
 		$this->save_collection_list($list);
 		$this->update_pages();
-		
-		$entry->save(); // save only if everything successful.
 	}
 	
 	public function update_entry($event) {
@@ -141,7 +137,7 @@ class App_Collection extends Atom_Feed {
 		
 		// find entry
 		for ($i=0; $i<count($list); $i++) {
-			if ($list[$i]["URI"] == $entry->name ) {
+			if ($list[$i]["URI"] == $entry->uri->to_string() ) {
 				$index = $i;
 			}
 		}
@@ -162,7 +158,7 @@ class App_Collection extends Atom_Feed {
 		$entry = $event->entry;
 		
 		for ($i=0; $i<count($list); $i++) {
-			if ($list[$i]["URI"] == $entry->name ) {
+			if ($list[$i]["URI"] == $entry->uri->to_string() ) {
 				$index = $i;
 			}
 		}
@@ -313,6 +309,7 @@ class App_Collection extends Atom_Feed {
 	
 	protected function attachEvents($entry) {
 		$events = array(
+			"before_entry_update",
 			"entry_update",
 			"entry_remove",
 			"entry_get",

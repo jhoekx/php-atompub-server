@@ -13,43 +13,39 @@ require_once("feedserializer.php");
 
 class Atom_Feed extends EventHTTPResource {
 	
-	public $name;
 	public $base_uri;
 	public $store;
+	
+	public $name;
+	public $pagenr;
+	
+	public $feed_uri;
 	
 	protected $service;
 	
 	public $page_length = 10;
 	
-	public function __construct($name, $store, $service) {
-		$nuri = new URI($name."/");
-		parent::__construct($nuri->resolve($service->base_uri));
-	
-		$this->name = $name;
+	public function __construct($uri, $store, $service) {
+		$this->base_uri = $service->base_uri;
+
+		if ( is_string($uri) ) { // name
+			$name = $uri;
+			$nuri = new URI($name."/");
+			$uri = $nuri->resolve($service->base_uri);
+		}
+		
+		parent::__construct($uri);
+		
+		$this->set_name_and_pagenr();
+		$this->feed_uri = $this->base_uri.$this->name."/";
 		
 		$this->store = $store;
 		$this->service = $service;
-		$this->base_uri = $service->base_uri;
+		
 	}
 	
 	public function http_GET($request) {
 		$response = new HTTPResponse();
-		
-		$page_template = new App_URITemplate($this->base_uri.$this->name."/pages/{pagenr}");
-		$name_template = new App_URITemplate($this->base_uri.$this->name."/");
-
-		$name_match = $name_template->matches($this->uri);
-		if ( $name_match !== FALSE ) {
-			$page = 1;
-			
-		} else {
-			$page_match = $page_template->matches($this->uri);
-			if ( $page_match !== FALSE ) {
-				$page = (int)$page_match["pagenr"];
-			} else {
-				throw new HTTPException("Wrong routing.", 404);
-			}
-		}
 		
 		// Caching
 		$time = $this->last_modified();
@@ -64,9 +60,8 @@ class Atom_Feed extends EventHTTPResource {
 			return $response;
 		}
 
-		
 		// Not cached
-		$data = $this->get_collection_page($page);
+		$data = $this->get_collection_page($this->pagenr);
 		
 		$response->http_status = "200 Ok";
 		$response->headers["Content-Type"] = "application/atom+xml;type=feed";
@@ -81,16 +76,38 @@ class Atom_Feed extends EventHTTPResource {
 		return $response;
 	}
 	
+	protected function set_name_and_pagenr() {
+		$page_template = new App_URITemplate($this->base_uri."{name}/pages/{pagenr}");
+		$name_template = new App_URITemplate($this->base_uri."{name}/");
+
+		$matches = $name_template->matches($this->uri);
+		if ( $matches !== FALSE ) {
+			$this->pagenr = 1;
+		} else {
+			$matches = $page_template->matches($this->uri);
+			if ( $matches !== FALSE ) {
+				$this->pagenr = (int)$matches["pagenr"];
+				if (  $this->pagenr === 0 && $matches["pagenr"] !== "0" ) {
+					throw new HTTPException("File not Found.", 404);
+				}
+			} else {
+				throw new HTTPException("Wrong routing.", 404);
+			}
+		}
+		
+		$this->name = $matches["name"];
+	}
+	
 	/*
 	 * Feed Generation
 	 */
 	 public function get_collection_page($pagenr) {
 		// Check if the collection exists
-		if ( !$this->service->collection_exists($this->base_uri.$this->name."/") ) {
+		if ( !$this->service->collection_exists($this->feed_uri) ) {
 			throw new HTTPException("Collection does not exist.",404);
 		}
 		
-		$key = $this->base_uri.$this->name."/pages/".$pagenr.".atom";
+		$key = $this->get_page_key($pagenr);
 		if ( !$this->store->exists($key) ) {
 			$doc = $this->create_page($pagenr);
 			
@@ -103,6 +120,10 @@ class Atom_Feed extends EventHTTPResource {
 		}
 		
 		return $this->store->get($key);
+	}
+	
+	public function last_modified() {
+		return $this->list_last_modified();
 	}
 	
 	protected function create_page($pagenr) {
@@ -127,8 +148,7 @@ class Atom_Feed extends EventHTTPResource {
 		$this->add_links_to_feed($feed, $pagenr, $total_entries);
 		
 		for ($i=$start; $i<$end; $i++) {
-			$uri = new URI($list[$i]["URI"].".atomentry");
-			$uri->absolutize($this->base_uri.$this->name."/");
+			$uri = new URI($list[$i]["URI"]);
 
 			$entry = new App_Entry($uri, $this);
 
@@ -138,14 +158,10 @@ class Atom_Feed extends EventHTTPResource {
 		return $feed;
 	}
 	protected function create_feed() {
-		if ( file_exists("templates/feed_".$this->name.".xml") ) {
-			$feed = DOMDocument::load("templates/feed_".$this->name.".xml");
-		} else {
-			$feed = DOMDocument::load("templates/feed.xml");
-		}
+
+		$feed = $this->get_feed_template();
 		
 		$domain = $this->uri->components["authority"];
-
 
 		$id = "tag:".$domain.",".date("Y").":".$this->name;
 		$title = $this->service->get_collection_title($this->uri);
@@ -191,26 +207,20 @@ class Atom_Feed extends EventHTTPResource {
 			$complete = $feed->createElementNS("http://purl.org/syndication/history/1.0",
 													"fh:complete");
 			$feed->documentElement->appendChild($complete);
-			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/pages/0");
+			$this->add_feed_link($feed, "self", $this->get_page_uri(0));
 			return;
 		}
 		
-		$this->add_feed_link($feed, "first", $this->base_uri.$this->name."/");
+		$this->add_feed_link($feed, "self", $this->get_page_uri($pagenr));
+		$this->add_feed_link($feed, "first", $this->get_page_uri(1));
 		if ( $nr_pages > 1 ) {
-			$this->add_feed_link($feed, "last", $this->base_uri.$this->name."/pages/".$nr_pages);
+			$this->add_feed_link($feed, "last", $this->get_page_uri($nr_pages));
 		}
 		if ($pagenr > 1) {
-			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/pages/".$pagenr);
-			if ( $pagenr-1 === 1 ) {
-				$this->add_feed_link($feed, "previous", $this->base_uri.$this->name."/pages/");
-			} else {
-			  $this->add_feed_link($feed, "previous", $this->base_uri.$this->name."/pages/".($pagenr-1));
-			}
-		} else {
-			$this->add_feed_link($feed, "self", $this->base_uri.$this->name."/");
+			$this->add_feed_link($feed, "previous", $this->get_page_uri($pagenr-1));
 		}
 		if ($pagenr < $nr_pages && $nr_pages > 1) {
-			$this->add_feed_link($feed, "next", $this->base_uri.$this->name."/pages/".($pagenr+1));
+			$this->add_feed_link($feed, "next", $this->get_page_uri($pagenr+1));
 		}
 	}
 	private function add_feed_link($feed, $rel, $href) {
@@ -221,7 +231,7 @@ class Atom_Feed extends EventHTTPResource {
 	}
 	
 	protected function get_collection_list() {
-		$key = $this->base_uri.$this->name."/list/list.json";
+		$key = $this->get_list_key();
 		$js = $this->store->get($key);
 		if ($js != "") {
 			$entries = json_decode($js, TRUE);
@@ -232,10 +242,10 @@ class Atom_Feed extends EventHTTPResource {
 	}
 	protected function save_collection_list($list) {
 		$js = json_encode($list);
-		$this->store->store($this->base_uri.$this->name."/list/list.json",$js);
+		$this->store->store($this->get_list_key(), $js);
 	}
 	protected function list_last_modified() {
-		$key = $this->base_uri.$this->name."/list/list.json";
+		$key = $this->get_list_key();
 		if ( $this->store->exists($key) ) {
 			return $this->store->modified($key);
 		} else {
@@ -243,13 +253,36 @@ class Atom_Feed extends EventHTTPResource {
 		}
 	}
 	protected function update_pages() {
-		$this->store->remove_dir($this->base_uri.$this->name."/pages/");
+		$this->store->remove_dir($this->base_name()."/pages/");
 	}
 	
-	/*
-	 * Extension methods
-	 */
-	protected function on_collection_get($request, $response) {
-	
+	protected function get_feed_template() {
+		if ( file_exists("templates/feed_".$this->name.".xml") ) {
+			$feed = DOMDocument::load("templates/feed_".$this->name.".xml");
+		} else {
+			$feed = DOMDocument::load("templates/feed.xml");
+		}
+		
+		return $feed;
 	}
+	
+	protected function base_name() {
+		return $this->base_uri.$this->name."/";
+	}
+	protected function get_page_key($nr) {
+		$key = $this->base_name()."pages/".$nr.".atom";
+		
+		return $key;
+	}
+	protected function get_list_key() {
+		return $this->base_name()."list/list.json";
+	}
+	protected function get_page_uri($nr) {
+		if ( $nr == 1 ) {
+			return $this->feed_uri;
+		} else {
+			return $this->feed_uri."pages/".$nr;
+		}
+	}
+	
 }

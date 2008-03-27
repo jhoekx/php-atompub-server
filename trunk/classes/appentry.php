@@ -8,8 +8,7 @@ require_once("feedserializer.php");
 
 class App_Entry extends EventHTTPResource {
 	
-	protected $collection;
-	
+	public $collection;
 	public $doc;
 	public $name;
 	
@@ -42,6 +41,7 @@ class App_Entry extends EventHTTPResource {
 	}
 	
 	public function update($document) {
+		$this->dispatchEvent( new APPEvent("before_entry_update", $this) );
 		
 		$cleaner = new App_Cleaner($this->uri, $this->collection->base_uri);
 		$cleaner->make_conforming($document);
