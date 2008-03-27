@@ -62,6 +62,7 @@ The HTTPEvent object has the `HTTPRequest` and `HTTPResponse` objects used for h
 An APPEvent object contains an App_Entry object. This makes it possible to change parts of a document. They are fired after php-atompub-server is done handling the entry, but before the entry is saved.
 
 An entry will dispatch the following events:
+  * APPEvent "before_entry_update"
   * APPEvent "entry_update"
   * APPEvent "entry_remove"
   * HTTPEvent "entry_get"
