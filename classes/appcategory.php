@@ -47,6 +47,10 @@ class App_Category extends Atom_Feed {
 			
 			$this->store->store($key, $data);
 			
+			$pages_list = $this->get_pages_list();
+			$pages_list[] = $key;
+			$this->save_pages_list($pages_list);
+			
 			return $data;
 		}
 		

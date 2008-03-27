@@ -116,6 +116,10 @@ class Atom_Feed extends EventHTTPResource {
 			
 			$this->store->store($key, $data);
 			
+			$pages_list = $this->get_pages_list();
+			$pages_list[] = $key;
+			$this->save_pages_list($pages_list);
+			
 			return $data;
 		}
 		
@@ -230,6 +234,9 @@ class Atom_Feed extends EventHTTPResource {
 		$feed->documentElement->appendChild($link);
 	}
 	
+	/*
+	 * Collections list
+	 */
 	protected function get_collection_list() {
 		$key = $this->get_list_key();
 		$js = $this->store->get($key);
@@ -252,8 +259,32 @@ class Atom_Feed extends EventHTTPResource {
 			return time();
 		}
 	}
+	/*
+	 * Pages list
+	 */
+	protected function get_pages_list() {
+		$key = $this->get_pagelist_key();
+		$js = $this->store->get($key);
+		if ($js != "") {
+			$entries = json_decode($js, TRUE);
+		} else {
+			$entries = json_decode("[]", TRUE);
+		}
+		return $entries;
+	}
+	protected function save_pages_list($list) {
+		$js = json_encode($list);
+		$this->store->store($this->get_pagelist_key(), $js);
+	}
+	
 	protected function update_pages() {
-		$this->store->remove_dir($this->base_name()."/pages/");
+		$list = $this->get_pages_list();
+		foreach ( $list as $key ) {
+			$this->store->remove($key);
+		}
+		$list = array();
+		$this->save_pages_list($list);
+		//$this->store->remove_dir($this->base_name()."/pages/");
 	}
 	
 	protected function get_feed_template() {
@@ -276,6 +307,9 @@ class Atom_Feed extends EventHTTPResource {
 	}
 	protected function get_list_key() {
 		return $this->base_name()."list/list.json";
+	}
+	protected function get_pagelist_key() {
+		return $this->base_name()."pages/list.json";
 	}
 	protected function get_page_uri($nr) {
 		if ( $nr == 1 ) {
