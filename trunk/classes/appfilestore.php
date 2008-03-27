@@ -61,22 +61,6 @@ class App_FileStore {
 			unlink($this->dir.$uri);
 		}
 	}
-	public function remove_dir($uri) {
-		$uri = $this->get_key($uri);
-		$key = $this->dir.$uri;
-		if ( file_exists($key) ) {
-		
-			$d = dir($key);
-			while (false !== ($file = $d->read())) {
-				if ($file != "." && $file != "..") {
-					unlink($key."/".$file);
-				}
-			}
-			$d->close();
-			
-			rmdir($key);
-		}
-	}
 	
 	private function get_key($uri) {
 		$uri = new URI($uri);
