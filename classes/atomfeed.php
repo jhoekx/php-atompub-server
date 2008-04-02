@@ -47,6 +47,8 @@ class Atom_Feed extends EventHTTPResource {
 	public function http_GET($request) {
 		$response = new HTTPResponse();
 		
+		$this->dispatchEvent( new HTTPEvent("before_collection_get", $request, $response) );
+		
 		// Caching
 		$time = $this->last_modified();
 		

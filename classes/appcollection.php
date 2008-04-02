@@ -24,6 +24,8 @@ class App_Collection extends Atom_Feed {
 	public function http_POST($request) {
 		$response = new HTTPResponse();
 		
+		$this->dispatchEvent( new HTTPEvent("before_collection_post", $request, $response) );
+		
 		if ( !$request->header_exists("Content-Type") ) {
 			throw new HTTPException("No Content-Type header sent.", 400);
 		}
@@ -314,7 +316,10 @@ class App_Collection extends Atom_Feed {
 			"entry_remove",
 			"entry_get",
 			"entry_put",
-			"entry_delete"
+			"entry_delete",
+			"before_entry_get",
+			"before_entry_put",
+			"before_entry_delete"
 		);
 		foreach ($events as $event) {
 			$entry->addEventListener($event, $this, "propagateEvent");
