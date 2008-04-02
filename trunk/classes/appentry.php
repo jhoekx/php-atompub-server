@@ -124,6 +124,8 @@ class App_Entry extends EventHTTPResource {
 	public function http_GET($request) {
 		$response = new HTTPResponse();
 		
+		$this->dispatchEvent( new HTTPEvent("before_entry_get", $request, $response) );
+		
 		$time = $this->last_modified();
 		
 		$etag = '"'.md5($time).'"';
@@ -150,6 +152,8 @@ class App_Entry extends EventHTTPResource {
 	
 	public function http_PUT($request) {
 		$response = new HTTPResponse();
+		
+		$this->dispatchEvent( new HTTPEvent("before_entry_put", $request, $response) );
 		
 		$time = $this->last_modified();
 		$etag = '"'.md5($time).'"';
@@ -181,6 +185,8 @@ class App_Entry extends EventHTTPResource {
 	
 	public function http_DELETE($request) {
 		$response = new HTTPResponse();
+		
+		$this->dispatchEvent( new HTTPEvent("before_entry_delete", $request, $response) );
 		
 		$this->delete();
 		
