@@ -50,7 +50,7 @@ class HTTPResource {
 	}
 	
 	public function try_gzip($request, $response) {
-		if ( $request->header_exists("Accept-Encoding") ){
+		if ( $request->header_exists("Accept-Encoding") && function_exists("gzencode") ){
 			
 			$pref = $request->preferred_encoding( array("gzip"=>1,"identity"=>0.5) );
 			if ($pref == "gzip") {
