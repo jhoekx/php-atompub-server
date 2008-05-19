@@ -2,7 +2,7 @@
 
 = Introduction =
 
-This document describes a way to sanitize input to a collection. It uses [http://htmlpurifier.org/ HTMLPurifier] to filter the input. The output of the code always has type="xhtml".
+This document describes a way to sanitize input to a collection. It uses [http://htmlpurifier.org/ HTMLPurifier] (Make sure to keep it up-to-date for the best protection) to filter the input. The output of the code always has type="xhtml".
 
 
 = Details =
