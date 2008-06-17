@@ -67,7 +67,11 @@ class HTTPRequest {
 		}
 		// Request
 		$this->method = $_SERVER["REQUEST_METHOD"];
-	
+		
+		if ( $this->method == "POST" && array_key_exists("HTTP_X_HTTP_METHOD_OVERRIDE",$_SERVER) ) {
+			$this->method = $_SERVER["HTTP_X_HTTP_METHOD_OVERRIDE"];	
+		}
+		
 		if ($this->method == "POST" || $this->method == "PUT") {
 			$this->request_body = file_get_contents("php://input");
 		}
