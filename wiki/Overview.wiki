@@ -24,7 +24,7 @@ There is a pluggable storage architecture. A filesystem based approach is built-
 === Feeds ===
 The feeds produced are currently not necessarily [http://feedvalidator.org/ valid]. Created entries will always have an `id`, `title`, `author` and `updated` element, but `summary` or `content`` elements are not always added, since sensible defaults are hard to provide. Correct values for these elements can be provided using collection specific code.
 
-Feeds are paged at 10 entries per page, this value is editable in the storage class. Paged feeds are given URI's like: `$base_uri/{collection}/3` in the example server. The sample HTTPServer also allows one to acces the complete feed with `$base_uri/{collection}/0` , this will be indicated by the {http://purl.org/syndication/history/1.0}complete element as defined in [http://tools.ietf.org/html/rfc5005#section-2 Feed Paging and Archiving].
+Feeds are paged at 10 entries per page, this value is editable in the storage class. Paged feeds are given URI's like: `$base_uri/{collection}/?page=3` in the example server. The sample HTTPServer also allows one to acces the complete feed with `$base_uri/{collection}/?page=0` , this will be indicated by the {http://purl.org/syndication/history/1.0}complete element as defined in [http://tools.ietf.org/html/rfc5005#section-2 Feed Paging and Archiving].
 
 === POSTing to a collection ===
 Entries that are posted to a collection will be given a URI like `$base_uri/{collection}/{slug}`. This naming scheme can be changed by subclassing the App_Collection class.
