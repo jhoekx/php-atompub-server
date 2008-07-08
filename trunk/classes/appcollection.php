@@ -41,7 +41,7 @@ class App_Collection extends Atom_Feed {
 		$last_modified = $this->time_to_gmt($time);
 		
 		$response->http_status = "201 Created";
-		$response->headers["Content-Type"] = $content_type;
+		$response->headers["Content-Type"] = "application/atom+xml;type=entry";
 		$response->headers["Location"] = $entry->uri;
 		$response->headers["Content-Location"] = $entry->uri;
 		$response->headers["ETag"] = $etag;
