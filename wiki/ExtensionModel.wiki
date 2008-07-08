@@ -79,5 +79,3 @@ Additionally, all events dispatched by the entry will also be dispatched to the 
 
 = Custom Store =
 Adding a custom store allows you to operate on other resources than just files. Let `php-atompub-server` do the AtomPub work and you'll be handed in a nice Atom entry to save to your backend database. 
-
-Beware however: the pages of a collection feed are also stored in the FileStore. Make sure you're able to handle them as well!
