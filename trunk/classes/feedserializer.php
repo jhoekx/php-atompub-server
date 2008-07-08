@@ -6,6 +6,7 @@ class FeedSerializer {
 	private $result = array();
 	
 	private $knownspaces = array(
+		"http://www.w3.org/XML/1998/namespace" => "xml",
 		"http://www.w3.org/1999/xhtml" => "html",
 		"http://www.w3.org/2005/Atom" => "atom",
 		"http://www.w3.org/2007/app" => "app",
@@ -27,7 +28,9 @@ class FeedSerializer {
 		
 		$nslist = ' xmlns="http://www.w3.org/2005/Atom"';
 		foreach ( $this->namespaces as $ns=>$ns_prefix ) {
-			$nslist = $nslist. ' xmlns:'.$ns_prefix.'="'.$ns.'"';
+			if ( $ns !== "http://www.w3.org/XML/1998/namespace" ) {
+				$nslist = $nslist. ' xmlns:'.$ns_prefix.'="'.$ns.'"';
+			}
 		}
 		$this->result[1] = '<'.$doc->documentElement->localName.$nslist;
 		
