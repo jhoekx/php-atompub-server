@@ -76,9 +76,9 @@ class App_Mimetype {
 			$params_parts = explode(";",str_replace("\"","",$params));
 			
 			foreach($params_parts as $param) {
-				$param_split = explode("=",$param);
-				$attribute = $param_split[0];
-				$value = $param_split[1];
+				$eq = strpos($param,"=");
+				$attribute = substr($param, 0,$eq);
+				$value = substr($param, $eq);
 				
 				$this->parameters[$attribute] = $value;
 			}
