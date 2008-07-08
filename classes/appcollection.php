@@ -14,8 +14,8 @@ require_once("feedserializer.php");
 
 class App_Collection extends Atom_Feed {
 	
-	public function __construct($name, $store, $service) {
-		parent::__construct($name, $store, $service);
+	public function __construct($uri, $service) {
+		parent::__construct($uri, $service);
 	}
 	
 	/*
@@ -61,13 +61,12 @@ class App_Collection extends Atom_Feed {
 	 * Collection methods
 	 */
 	public function get_entry($uri) {
-		$r_uri = $uri->base_on($this->feed_uri);
-
-		if (!$this->store->exists($uri)) {
+	
+		if (!$this->atom_store->exists($uri)) {
 			throw new HTTPException("Resource does not exist.",404);
 		}
 		
-		if ($r_uri->get_extension() == "atomentry") {
+		if ($uri->get_extension() == "atomentry") {
 			$entry = new App_Entry($uri, $this);
 		} else {
 			$entry = new App_MediaResource($uri, $this);
@@ -82,13 +81,13 @@ class App_Collection extends Atom_Feed {
 	
 	public function create_entry($name, $data, $content_type) {
 		// Check if the collection exists
-		if ( !$this->service->collection_exists($this->feed_uri) ) {
+		if ( !$this->service->collection_exists($this->uri) ) {
 			throw new HTTPException("Collection does not exist.", 404);
 		}
 		
 		// Check if the collection accepts a given media type
 		if ( !$this->is_supported_media_type($content_type) ) {
-			throw new HTTPException("Unsupported Media Type",415);
+			throw new HTTPException("Unsupported Media Type.",415);
 		}
 		
 		if ( $this->mimetype_is_atom($content_type) ) {
@@ -110,7 +109,7 @@ class App_Collection extends Atom_Feed {
 	}
 	
 	public function is_supported_media_type($content_type) {
-		return $this->service->mimetype_accepted($content_type, $this->feed_uri);
+		return $this->service->mimetype_accepted($content_type, $this->uri);
 	}
 	
 	/*
@@ -122,12 +121,12 @@ class App_Collection extends Atom_Feed {
 		
 		// check if the entry already exists
 		foreach( $list as $item ) {
-			if ($item["URI"] == $entry->name ) {
+			if ($item["URI"] == $entry->uri ) {
 				throw new HTTPException("Entry already exists.", 409);
 			}
 		}
 		
-		array_push($list, array("URI"=>$entry->uri->to_string(), "Edit"=>time()) );
+		array_unshift($list, array("URI"=>$entry->uri->to_string(), "Edit"=>time()) );
 		
 		$this->save_collection_list($list);
 		$this->update_pages();
@@ -148,7 +147,7 @@ class App_Collection extends Atom_Feed {
 		if (isset($index)) {
 			$item = array_splice($list,$index,1);
 			$item[0]["Edit"] = time();
-			array_push($list, $item[0]);
+			array_unshift($list, $item[0]);
 		}
 		
 		$this->save_collection_list($list);
@@ -213,7 +212,7 @@ class App_Collection extends Atom_Feed {
 		
 		if ( !$this->is_atom_entry($entry_doc) ) {
 			// atom file, but no entry -> disallow
-			throw new HTTPException("Adding feeds to a collection is undefined",400);
+			throw new HTTPException("Adding feeds to a collection is undefined.",400);
 		}
 		
 		$uri = new URI($this->base_uri.$this->name."/".$name.".atomentry");
@@ -253,23 +252,16 @@ class App_Collection extends Atom_Feed {
 			}
 		}
 		
-		$doc = DOMDocument::load("templates/medialink.xml");
+		if (!defined("FEED_TEMPLATE_DIR")) {
+			define("FEED_TEMPLATE_DIR", "templates");
+		}
+		$doc = DOMDocument::load(FEED_TEMPLATE_DIR."/medialink.xml");
 		$media_link_uri = new URI($this->base_uri.$this->name."/$name.atomentry");
 		$media_resource_uri = new URI($this->base_uri.$this->name."/$name.".$extension);
-		
-		// id
-		$domain = explode("/", str_replace("http://","",$this->base_uri));
-		if ( is_array($domain) ) {
-			$domain = $domain[0];
-		}
-		$year = date("Y"); $month = date("m"); $day = date("d");
-		$id = "tag:".$domain.",".$year."-".$month."-".$day.":".$this->name."/".$name;
 		
 		// required fields
 		$doc->getElementsByTagName("title")->item(0)->appendChild( 
 				$doc->createTextNode( utf8_encode(rawurldecode($name)) ) );
-		$doc->getElementsByTagName("id")->item(0)->appendChild( 
-				$doc->createTextNode($id) );
 		$doc->getElementsByTagName("updated")->item(0)->appendChild( 
 				$doc->createTextNode( date(DATE_ATOM) ) );
 		$doc->getElementsByTagName("published")->item(0)->appendChild( 
@@ -278,6 +270,10 @@ class App_Collection extends Atom_Feed {
 		$doc->getElementsByTagName("content")->item(0)->setAttribute("src",$media_resource_uri);
 		$doc->getElementsByTagName("link")->item(0)->setAttribute("href",$media_resource_uri);
 		$doc->getElementsByTagName("link")->item(1)->setAttribute("href",$media_link_uri);
+		
+		// clean up
+		$cleaner = new App_Cleaner($media_link_uri, $this->base_uri);
+		$cleaner->make_conforming($doc);
 		
 		// app:edited
 		$edit = $doc->createElementNS("http://www.w3.org/2007/app","app:edited");
@@ -292,8 +288,7 @@ class App_Collection extends Atom_Feed {
 		$media_resource = new App_MediaResource($media_resource_uri, $this);
 		$media_resource->content = $data;
 		
-		$media_link->save();
-		$media_resource->save();
+		$media_link->media_resource = $media_resource;
 		
 		return $media_link;
 	}

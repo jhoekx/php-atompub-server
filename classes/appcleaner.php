@@ -27,11 +27,12 @@ class App_Cleaner {
 			
 			$doc->documentElement->appendChild($id);
 		} else {
-			// check if it's not empty
+			// always use our own ID.
 			$id = $id_list->item(0);
-			if ( $id->textContent == "" ) {
-				$id->appendChild( $doc->createTextNode($this->create_id()) );
+			while ($id->childNodes->length !== 0) {
+				$id->removeChild( $id->childNodes->item(0) );
 			}
+			$id->appendChild( $doc->createTextNode($this->create_id()) );
 		}
 		
 		// title

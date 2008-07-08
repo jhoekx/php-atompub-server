@@ -5,12 +5,12 @@ class App_URITemplate {
 	private $expr;
 	
 	public function __construct($expr) {
-		$this->expr = $expr;
+		$this->expr = new URI($expr);
 	}
 	
 	public function matches($uri) {
-		$parts = split("/", $this->expr);
-		$uriparts = split("/", $uri);
+		$parts = split("/", $this->expr->components["path"]);
+		$uriparts = split("/", $uri->components["path"]);
 		
 		if ( count($parts) != count($uriparts) ) {
 			return FALSE;

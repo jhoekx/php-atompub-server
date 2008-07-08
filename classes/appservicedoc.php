@@ -158,6 +158,11 @@ class App_Servicedoc extends HTTPResource{
 		}
 		$cols = $this->doc->getElementsByTagNameNS("http://www.w3.org/2007/app","collection");
 		
+		$parts = split("\?",$uri);
+		if ( is_array($parts) ) {
+			$uri = $parts[0];
+		}
+		
 		foreach ( $cols as $col ) {
 			if ( URI::resolve_node($col->getAttributeNode("href"),$this->uri) == $uri ) {
 				return $col;

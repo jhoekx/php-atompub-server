@@ -9,6 +9,11 @@ class App_MediaResource extends App_Entry {
 	public function __construct($uri, $collection) {
 		parent::__construct($uri, $collection);
 		
+		if (!defined("ATOM_STORE_DIR")) {
+			define("ATOM_STORE_DIR", "store/".$collection->name);
+		}
+		$this->store = new App_FileStore(ATOM_STORE_DIR, $collection->base_uri);
+		
 		$this->extension = $uri->get_extension();
 	}
 	

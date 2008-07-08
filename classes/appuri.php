@@ -218,12 +218,16 @@ class URI {
 					$str = $str."/".$path[$i];
 				}
 			}
-			
-			return new URI($str);
+		} else {
+			$str = $this->components["path"];
+		}
+		
+		if ( $this->component_exists("query") ) {
+			$str = $str."?".$this->components["query"];
 		}
 		
 		// if no dir in common -> return relative to root
-		return new URI($this->components["path"]);
+		return new URI($str);
 	}
 	
 	public function to_string() {
@@ -235,6 +239,22 @@ class URI {
 	public function get_extension() {
 		$parts = split("\.",$this->components["path"]);
 		return  $parts[count($parts)-1];
+	}
+	
+	public function query_parameter($name) {
+		if ( !$this->component_exists("query") ) {
+			return "";
+		}
+		
+		$parts = split("&", $this->components["query"]);
+		foreach ( $parts as $part ) {
+			$temp = split("=", $part);
+			if ( is_array($temp) && $temp[0]==$name) {
+				return $temp[1];
+			}
+		}
+		
+		return "";
 	}
 	
 	private function uri_obj($test) {
@@ -394,8 +414,8 @@ class URI {
 		if ( array_key_exists("path",$parts) ) {
 			array_push($uri, $parts["path"]);
 		}
-		if ( array_key_exists("query",$parts) ) {
-			array_push($uri, $parts["query"]);
+		if ( array_key_exists("query",$parts) && $parts["query"]!=="" ) {
+			array_push($uri, "?".$parts["query"]);
 		}
 		if ( array_key_exists("fragment",$parts) ) {
 			array_push($uri, $parts["fragment"]);
