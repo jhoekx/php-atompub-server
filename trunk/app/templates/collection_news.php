@@ -3,8 +3,8 @@
 
 class App_Collection_news extends App_Collection {
 
-	public function __construct($name, $store, $service) {
-		parent::__construct($name, $store, $service);
+	public function __construct($name, $service) {
+		parent::__construct($name, $service);
 		
 		$this->addEventListener("entry_create", $this, "on_entry_create");
 	}

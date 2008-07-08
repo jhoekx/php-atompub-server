@@ -4,48 +4,33 @@ require_once("atomfeed.php");
 
 class App_Category extends Atom_Feed {
 
-	public function __construct($uri, $store, $service) {
+	public function __construct($uri, $service) {
 		if ( is_string($uri) ) { // name
 			$name = $uri;
 			$nuri = new URI("-/".$name."/");
 			$uri = $nuri->resolve($service->base_uri);
+			
+			$this->name = "-/".$name;
 		}
 	
-		parent::__construct($uri, $store, $service);
+		parent::__construct($uri, $service);
+		
+		// get name from URI
+		$r_uri = $this->uri->base_on($this->base_uri);
+		$nparts = split("/",$r_uri);
+		$this->name = "-/".$nparts[1];
 	}
 	
-	protected function set_name_and_pagenr() {
-		$page_template = new App_URITemplate($this->base_uri."-/{name}/pages/{pagenr}");
-		$name_template = new App_URITemplate($this->base_uri."-/{name}/");
-
-		$matches = $name_template->matches($this->uri);
-		if ( $matches !== FALSE ) {
-			$this->pagenr = 1;
-		} else {
-			$matches = $page_template->matches($this->uri);
-			if ( $matches !== FALSE ) {
-				$this->pagenr = (int)$matches["pagenr"];
-				if (  $this->pagenr === 0 && $matches["pagenr"] !== "0" ) {
-					throw new HTTPException("File not Found.", 404);
-				}
-			} else {
-				throw new HTTPException("Wrong routing.", 404);
-			}
-		}
+	public function get_feed_page() {
 		
-		$this->name = $matches["name"];
-	}
-	
-	public function get_collection_page($pagenr) {
-		
-		$key = $this->get_page_key($pagenr);
-		if ( !$this->store->exists($key) ) {
-			$doc = $this->create_page($pagenr);
+		$key = $this->get_page_key($this->pagenr);
+		if ( !$this->feed_cache->exists($key) ) {
+			$doc = $this->create_page();
 			
 			$fs = new FeedSerializer();
 			$data = $fs->writeToString($doc);
 			
-			$this->store->store($key, $data);
+			$this->feed_cache->store($key, $data);
 			
 			$pages_list = $this->get_pages_list();
 			$pages_list[] = $key;
@@ -54,13 +39,13 @@ class App_Category extends Atom_Feed {
 			return $data;
 		}
 		
-		return $this->store->get($key);
+		return $this->feed_cache->get($key);
 	}
 	
 	public function add_entry($entry) {
 		$list = $this->get_collection_list();
 		
-		array_push($list, array("URI"=>$entry->uri->to_string(), "Edit"=>time()) );
+		array_unshift($list, array("URI"=>$entry->uri->to_string(), "Edit"=>time()) );
 		
 		$this->save_collection_list($list);
 		$this->update_pages();
@@ -81,7 +66,7 @@ class App_Category extends Atom_Feed {
 		if (isset($index)) {
 			$item = array_splice($list,$index,1);
 			$item[0]["Edit"] = time();
-			array_push($list, $item[0]);
+			array_unshift($list, $item[0]);
 		}
 		
 		$this->save_collection_list($list);
@@ -106,6 +91,6 @@ class App_Category extends Atom_Feed {
 	}
 	
 	protected function base_name() {
-		return $this->base_uri."-/".$this->name."/";
+		return $this->base_uri.$this->name."/";
 	}
 }

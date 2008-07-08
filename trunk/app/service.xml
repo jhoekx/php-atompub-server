@@ -8,6 +8,9 @@
 	<collection href="test/">
 		<atom:title>Atompub Test: Test</atom:title>
 		<accept>*/*</accept>
+		<categories>
+			<atom:category term="geen"/>
+		</categories>
 	</collection>
 	
 	<collection href="news/">

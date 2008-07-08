@@ -5,8 +5,8 @@ class App_Categorized_Collection extends App_Collection {
 	
 	protected $temp_cats;
 	
-	public function __construct($name, $store, $service) {
-		parent::__construct($name, $store, $service);
+	public function __construct($name, $service) {
+		parent::__construct($name, $service);
 		
 		$this->addEventListener("entry_create", $this, "add_category");
 		$this->addEventListener("before_entry_update", $this, "temp_category");
@@ -24,7 +24,7 @@ class App_Categorized_Collection extends App_Collection {
 		
 		$cats = $this->find_categories($entry->get_document()->documentElement);
 		
-		if ( !$this->entry_allowed($cats) ) {
+		if ( !$this->category_allowed($cats) ) {
 			throw new HTTPException("Category not allowed", 412);
 		}
 		
@@ -33,17 +33,17 @@ class App_Categorized_Collection extends App_Collection {
 		$upcats = array_diff($cats, $newcats);
 		
 		foreach( $oldcats as $cat ) {
-			$category = new App_Category($cat, $this->store, $this->service);
+			$category = new App_Category($cat, $this->service);
 			$category->remove_entry($entry);
 		}
 		
 		foreach( $newcats as $cat ) {
-			$category = new App_Category($cat, $this->store, $this->service);
+			$category = new App_Category($cat, $this->service);
 			$category->add_entry($entry);
 		}
 		
 		foreach( $upcats as $cat ) {
-			$category = new App_Category($cat, $this->store, $this->service);
+			$category = new App_Category($cat, $this->service);
 			$category->update_entry($entry);
 		}
 	}
@@ -54,7 +54,7 @@ class App_Categorized_Collection extends App_Collection {
 		$cats = $this->find_categories($entry->get_document()->documentElement);
 		
 		foreach( $cats as $cat ) {
-			$category = new App_Category($cat, $this->store, $this->service);
+			$category = new App_Category($cat, $this->service);
 			$category->remove_entry($entry);
 		}
 	}
@@ -64,12 +64,12 @@ class App_Categorized_Collection extends App_Collection {
 		
 		$cats = $this->find_categories($entry->get_document()->documentElement);
 		
-		if ( !$this->entry_allowed($cats) ) {
+		if ( !$this->category_allowed($cats) ) {
 			throw new HTTPException("Category not allowed", 412);
 		}
 		
 		foreach( $cats as $cat ) {
-			$category = new App_Category($cat, $this->store, $this->service);
+			$category = new App_Category($cat, $this->service);
 			$category->add_entry($entry);
 		}
 	}
@@ -91,13 +91,13 @@ class App_Categorized_Collection extends App_Collection {
 		return $cats;
 	}
 	
-	private function entry_allowed($cats) {
+	private function category_allowed($cats) {
 		if ( count($cats) == 0 ) {
 			return TRUE;
 		}
 	
 		foreach( $cats as $cat ) {
-			if ( $this->service->category_allowed($cat, $this->feed_uri) ) {
+			if ( $this->service->category_allowed($cat, $this->uri) ) {
 				return TRUE;
 			}
 		}

@@ -16,7 +16,11 @@ class App_Entry extends EventHTTPResource {
 		parent::__construct($uri);
 		
 		$this->collection = $collection;
-		$this->store = $collection->store;
+		
+		if (!defined("ATOM_STORE_DIR")) {
+			define("ATOM_STORE_DIR", "store/".$collection->name);
+		}
+		$this->store = new App_FileStore(ATOM_STORE_DIR, $collection->base_uri);
 		
 		$r_uri = new URI( $uri->base_on($collection->uri) );
 		$this->name = str_replace(".".$r_uri->get_extension(),"",$r_uri);
@@ -25,6 +29,10 @@ class App_Entry extends EventHTTPResource {
 	public function save() {
 		$fs = new FeedSerializer();
 		$this->store->store($this->uri, $fs->writeToString($this->get_document()));
+		
+		if (isset($this->media_resource)) {
+			$this->media_resource->save();
+		}
 	}
 	
 	public function get_document() {

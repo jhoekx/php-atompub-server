@@ -11,11 +11,9 @@ require_once("httpexception.php");
 
 class App_Server {
 
-	private $store;
 	private $base_uri;
 
-	public function __construct($store, $base_uri) {
-		$this->store = $store;
+	public function __construct($base_uri) {
 		$this->base_uri = new URI($base_uri);
 	}
 	
@@ -23,15 +21,13 @@ class App_Server {
 		
 		$templates = array(
 			array("App_Collection", "{colname}/"),
-			array("App_Collection", "{colname}/pages/{nr}"),
 			array("App_Category", "-/{category}/"),
-			array("App_Category", "-/{category}/pages/{nr}"),
 			array("App_Entry", "{colname}/{entryname}"),
 			array("App_Entry", "{colname}/{year}/{month}/{day}/{entryname}"),
 			array("App_Servicedoc", "service"),
 			array("App_Servicedoc", "")
 		);
-		
+
 		foreach( $templates as $temp ) {
 			$obj = $temp[0];
 			$str = $temp[1];
@@ -46,14 +42,13 @@ class App_Server {
 		}
 		
 		throw new HTTPException("No matching resource!",404);
-		
 	}
 	
 	public function create_resource($uri, $obj, $vars) {
 		switch ($obj) {
 			case "App_Collection":
 				$service = new App_Servicedoc("service.xml", $this->base_uri);
-				$collection = $this->create_collection($vars, $service);
+				$collection = $this->create_collection($uri, $service);
 				return $collection;
 				break;
 			case "App_Servicedoc":
@@ -62,14 +57,17 @@ class App_Server {
 				break;
 			case "App_Entry":
 				$service = new App_Servicedoc("service.xml", $this->base_uri);
-				$collection = $this->create_collection($vars, $service);
+				
+				$coll_uri = new URI($this->base_uri.$vars["colname"]);
+				
+				$collection = $this->create_collection($coll_uri, $service);
 				
 				$entry = $collection->get_entry($uri);
 				return $entry;
 				break;
 			case "App_Category":
 				$service = new App_Servicedoc("service.xml", $this->base_uri);
-				$category = new App_Category($uri, $this->store, $service);
+				$category = new App_Category($uri, $service);
 				return $category;
 				break;
 			default:
@@ -77,21 +75,16 @@ class App_Server {
 		}
 	}
 	
-	public function create_collection($vars, $service) {
-		$name = $vars["colname"];
-		
-		if ( !array_key_exists("nr",$vars) ) {
-			$uri = new URI($this->base_uri.$name."/");
-		} else {
-			$uri = new URI($this->base_uri.$name."/pages/".$vars["nr"]);
-		}
-	
+	public function create_collection($uri, $service) {
+		$name = $uri->base_on($this->base_uri);
+		$name =  str_replace("/","",$name->components["path"]);
+
 		if ( file_exists("templates/collection_".$name.".php") ) {
 			include_once("templates/collection_".$name.".php");
 			$class = "App_Collection_".$name;
-			$collection = new $class($uri, $this->store, $service);
+			$collection = new $class($uri, $service);
 		} else {
-			$collection = new App_Collection($uri, $this->store, $service);
+			$collection = new App_Collection($uri, $service);
 		}
 		
 		return $collection;
