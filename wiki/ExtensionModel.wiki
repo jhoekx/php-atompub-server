@@ -21,8 +21,8 @@ Take a look at this example:
 {{{
 class App_Collection_test extends App_Collection {
 
-	public function __construct($name, $store, $service) {
-		parent::__construct($name, $store, $service);
+	public function __construct($name, $service) {
+		parent::__construct($name, $service);
 		
 		$this->addEventListener("entry_create", $this, "on_entry_create");
 	}
@@ -78,4 +78,6 @@ A collection dispatches these events:
 Additionally, all events dispatched by the entry will also be dispatched to the collection. This means you can listen for "entry_put" on a collection.
 
 = Custom Store =
-Adding a custom store allows you to operate on other resources than just files. Let `php-atompub-server` do the AtomPub work and you'll be handed in a nice Atom entry to save to your backend database. 
+Adding a custom store allows you to operate on other resources than just files. Let `php-atompub-server` do the AtomPub work and you'll be handed in a nice Atom entry to save to your backend database.
+
+An example of this extension model can be found in the phpBBStore example.
