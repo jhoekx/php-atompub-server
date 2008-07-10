@@ -22,9 +22,9 @@ class Atom_Feed extends EventHTTPResource {
 	
 	protected $service;
 	
-	protected $atom_store; // ATOM_STORE_DIR
-	protected $list_store; // LIST_STORE_DIR
-	protected $feed_cache; // FEED_CACHE_DIR
+	public $atom_store; // ATOM_STORE_DIR
+	public $list_store; // LIST_STORE_DIR
+	public $feed_cache; // FEED_CACHE_DIR
 	
 	public function __construct($uri, $service) {
 		parent::__construct($uri);
@@ -105,17 +105,19 @@ class Atom_Feed extends EventHTTPResource {
 		}
 		
 		$key = $this->get_page_key($this->pagenr);
-		if ( !$this->feed_cache->exists($key) ) {
+		if ( !isset($this->feed_cache) || !$this->feed_cache->exists($key) ) {
 			$doc = $this->create_page();
 			
 			$fs = new FeedSerializer();
 			$data = $fs->writeToString($doc);
 			
-			$this->feed_cache->store($key, $data);
+			if ( isset($this->feed_cache) ) {
+				$this->feed_cache->store($key, $data);
 			
-			$pages_list = $this->get_pages_list();
-			$pages_list[] = $key;
-			$this->save_pages_list($pages_list);
+				$pages_list = $this->get_pages_list();
+				$pages_list[] = $key;
+				$this->save_pages_list($pages_list);
+			}
 			
 			return $data;
 		}
@@ -191,7 +193,7 @@ class Atom_Feed extends EventHTTPResource {
 		}
 		if ( $updates->length == 0 ) {
 			$update_el = $feed->createElementNS("http://www.w3.org/2005/Atom","updated");
-			$update_el->appendChild( $feed->createTextNode( date(DATE_ATOM) ) );
+			$update_el->appendChild( $feed->createTextNode( date(DATE_ATOM,$this->last_modified()) ) );
 			$feed->documentElement->appendChild($update_el);
 		}
 		
