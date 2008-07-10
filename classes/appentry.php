@@ -17,10 +17,7 @@ class App_Entry extends EventHTTPResource {
 		
 		$this->collection = $collection;
 		
-		if (!defined("ATOM_STORE_DIR")) {
-			define("ATOM_STORE_DIR", "store/".$collection->name);
-		}
-		$this->store = new App_FileStore(ATOM_STORE_DIR, $collection->base_uri);
+		$this->store = $collection->atom_store;
 		
 		$r_uri = new URI( $uri->base_on($collection->uri) );
 		$this->name = str_replace(".".$r_uri->get_extension(),"",$r_uri);
