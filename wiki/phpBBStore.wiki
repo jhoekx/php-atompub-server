@@ -1,0 +1,22 @@
+#summary Give phpBB some AtomPub support.
+
+= Introduction =
+
+This article provides an overview of the code needed to use php-atompub-server with [http://www.phpbb.com/ phpBB] (tested with 3.0.1). The [http://code.google.com/p/php-atompub-server/source/browse/trunk/examples/phpbb/ code] is in the examples subdirectory.
+
+There is no support for foreign markup in atom entries and posting will not preserve markup in the content, only plain text.
+
+= Details =
+
+phpBB stores data in a database, usually MySQL. This means we have to use a custom store that talks to the database. To do this, we need to set up a [http://php-atompub-server.googlecode.com/svn/trunk/examples/phpbb/collection_phpbb.php custom collection] that creates the store, in this case named phpbb, so its location will be `{base}/phpbb/`. Make sure the includes point to the right files. The parameters that need to be changed are [http://php-atompub-server.googlecode.com/svn/trunk/examples/phpbb/collection_phpbb.php#char=412,426 the forum] you want to use as a store and the [http://php-atompub-server.googlecode.com/svn/trunk/examples/phpbb/collection_phpbb.php#char=368,402 base URI] of the AtomPub server.
+
+The [http://php-atompub-server.googlecode.com/svn/trunk/examples/phpbb/phpbbliststore.php list store] and the [http://php-atompub-server.googlecode.com/svn/trunk/examples/phpbb/phpbbatomstore.php atom store] talk to the [http://php-atompub-server.googlecode.com/svn/trunk/examples/phpbb/phpbb.php forum class]. That class uses a BBCode parser. I have used [http://www.webtech101.com/PHP/simple-bb-code this one], but others should also work fine. The standard phpBB one is unusable, since it requires code from all over the phpBB-place. You also might want to change the [http://php-atompub-server.googlecode.com/svn/trunk/examples/phpbb/phpbb.php#char=231,287 database driver and password].
+
+The last thing to do is to add the collection to the service document:
+{{{
+	<collection href="phpbb/">
+		<atom:title>AtomPub Test: PHPBB</atom:title>
+	</collection>
+}}}
+
+Now you can use at least Windows Live Writer to add topics to the forum.
