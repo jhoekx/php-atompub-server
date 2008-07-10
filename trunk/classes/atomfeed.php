@@ -277,6 +277,8 @@ class Atom_Feed extends EventHTTPResource {
 	}
 	
 	protected function update_pages() {
+		if (!isset($this->feed_cache)) return;
+		
 		$list = $this->get_pages_list();
 		foreach ( $list as $key ) {
 			$this->feed_cache->remove($key);
