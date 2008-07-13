@@ -13,7 +13,8 @@ class FeedSerializer {
 		"http://www.w3.org/2000/svg" => "svg",
 		"http://www.w3.org/1999/xlink" => "xlink",
 		"http://www.w3.org/1998/Math/MathML" => "math",
-		"http://purl.org/syndication/history/1.0" => "fh"
+		"http://purl.org/syndication/history/1.0" => "fh",
+		"http://purl.org/syndication/thread/1.0" => "thr"
 	);
 	private $namespaces = array();
 	private $nscounter = 0;
