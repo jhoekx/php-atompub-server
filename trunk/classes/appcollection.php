@@ -206,7 +206,15 @@ class App_Collection extends Atom_Feed {
 	}
 	
 	protected function mimetype_is_atom($content_type) {
-		return !(stristr($content_type,"application/atom+xml") === FALSE);
+		if ($content_type->type=="application" && $content_type->subtype=="atom+xml") {
+			if ( $content_type->parameter_exists("type") ) {
+				if ( $content_type->parameters["type"]=="feed" ) {
+					return FALSE;
+				}
+			}
+			return TRUE;
+		}
+		return FALSE;
 	}
 	protected function is_atom_entry($doc) {
 		$cA = ($doc->documentElement->localName == "entry");
