@@ -8,6 +8,7 @@ require_once("appentry.php");
 require_once("appmediaresource.php");
 require_once("appmimetype.php");
 require_once("appcleaner.php");
+require_once("appmultipart.php");
 
 require_once("atomfeed.php");
 require_once("feedserializer.php");
@@ -85,18 +86,23 @@ class App_Collection extends Atom_Feed {
 			throw new HTTPException("Collection does not exist.", 404);
 		}
 		
-		// Check if the collection accepts a given media type
-		if ( !$this->is_supported_media_type($content_type) ) {
-			throw new HTTPException("Unsupported Media Type.",415);
-		}
-		
-		if ( $this->mimetype_is_atom($content_type) ) {
-			// Add an atom entry
-			// feeds also go down this path, but they will be filtered out later on
-			$entry = $this->create_entry_resource($name, $data);
+		if ($content_type->type=="multipart" && $content_type->subtype=="related") {
+			$entry = $this->create_multipart($name, $data, $content_type);
 		} else {
-			// Media entry
-			$entry = $this->create_media_resource($name, $data, $content_type);
+			// Check if the collection accepts a given media type
+			if ( !$this->is_supported_media_type($content_type) ) {
+				throw new HTTPException("Unsupported Media Type.",415);
+			}
+			
+			if ( $this->mimetype_is_atom($content_type) ) {
+				// Add an atom entry
+				// feeds also go down this path, but they will be filtered out later on
+				$entry = $this->create_entry_resource($name, $data);
+			} else {
+				// Media entry
+				$media_resource = $this->create_media_resource($name, $data, $content_type);
+				$entry = $this->create_media_link_entry($name, $media_resource);
+			}
 		}
 		
 		$this->attachEvents($entry);
@@ -118,13 +124,6 @@ class App_Collection extends Atom_Feed {
 	public function add_entry($event) {
 		$list = $this->get_collection_list();
 		$entry = $event->entry;
-		
-		// check if the entry already exists
-		foreach( $list as $item ) {
-			if ($item["URI"] == $entry->uri ) {
-				throw new HTTPException("Entry already exists.", 409);
-			}
-		}
 		
 		array_unshift($list, array("URI"=>$entry->uri->to_string(), "Edit"=>time()) );
 		
@@ -194,6 +193,18 @@ class App_Collection extends Atom_Feed {
 		return utf8_encode($name);
 	}
 	
+	protected function entry_exists($uri) {
+		$list = $this->get_collection_list();
+		
+		foreach( $list as $item ) {
+			if ($item["URI"] == $uri ) {
+				return TRUE;
+			}
+		}
+		
+		return FALSE;
+	}
+	
 	protected function mimetype_is_atom($content_type) {
 		return !(stristr($content_type,"application/atom+xml") === FALSE);
 	}
@@ -204,6 +215,12 @@ class App_Collection extends Atom_Feed {
 	}
 	
 	protected function create_entry_resource($name, $data) {
+		$uri = new URI($this->base_uri.$this->name."/".$name.".atomentry");
+	
+		if ( $this->entry_exists($uri) ) {
+			throw new HTTPException("Entry already exists.", 409);
+		}
+		
 		// test for well-formed XML
 		$entry_doc = DOMDocument::loadXML($data, LIBXML_NOWARNING+LIBXML_NOERROR);
 		if( !isset($entry_doc) || $entry_doc == FALSE ) {
@@ -214,8 +231,6 @@ class App_Collection extends Atom_Feed {
 			// atom file, but no entry -> disallow
 			throw new HTTPException("Adding feeds to a collection is undefined.",400);
 		}
-		
-		$uri = new URI($this->base_uri.$this->name."/".$name.".atomentry");
 		
 		// link[@rel='edit']
 		$link = $entry_doc->createElementNS("http://www.w3.org/2005/Atom","link");
@@ -239,9 +254,13 @@ class App_Collection extends Atom_Feed {
 	}
 	
 	protected function create_media_resource($name, $data, $content_type) {
-	
-		// media type
+		$media_link_uri = new URI($this->base_uri.$this->name."/$name.atomentry");
 		$extension = $content_type->get_extension();
+		$media_resource_uri = new URI($this->base_uri.$this->name."/$name.".$extension);
+		
+		if ( $this->entry_exists($media_link_uri) ) {
+			throw new HTTPException("Entry already exists.", 409);
+		}
 		
 		// convert to utf-8
 		if ( $content_type->type == "text" ) {
@@ -252,12 +271,27 @@ class App_Collection extends Atom_Feed {
 			}
 		}
 		
+		// media resource
+		$media_resource = new App_MediaResource($media_resource_uri, $this);
+		$media_resource->content = $data;
+		
+		return $media_resource;
+	}
+	
+	protected function create_media_link_entry($name, $media_resource) {
+		$media_link_uri = new URI($this->base_uri.$this->name."/$name.atomentry");
+		
+		$media_resource_uri = $media_resource->uri;
+		$content_type = $media_resource->get_media_type();
+		
+		if ( $this->entry_exists($media_link_uri) ) {
+			throw new HTTPException("Entry already exists.", 409);
+		}
+		
 		if (!defined("FEED_TEMPLATE_DIR")) {
 			define("FEED_TEMPLATE_DIR", "templates");
 		}
 		$doc = DOMDocument::load(FEED_TEMPLATE_DIR."/medialink.xml");
-		$media_link_uri = new URI($this->base_uri.$this->name."/$name.atomentry");
-		$media_resource_uri = new URI($this->base_uri.$this->name."/$name.".$extension);
 		
 		// required fields
 		$doc->getElementsByTagName("title")->item(0)->appendChild( 
@@ -284,13 +318,60 @@ class App_Collection extends Atom_Feed {
 		$media_link = new App_Entry($media_link_uri, $this);
 		$media_link->doc = $doc;
 		
-		// media resource
-		$media_resource = new App_MediaResource($media_resource_uri, $this);
-		$media_resource->content = $data;
-		
 		$media_link->media_resource = $media_resource;
 		
 		return $media_link;
+	}
+	
+	protected function create_multipart($name, $data, $content_type) {
+		if ( !$content_type->parameter_exists("boundary") ) {
+			throw new HTTPException("No boundary in multipart message.", 400);
+		}
+		
+		$mp = new App_Multipart($this, $content_type->parameters["boundary"], $name, $data);
+		
+		$atom_part = $mp->get_entry_part();
+		$media_part = $mp->get_media_part();
+		
+		if ( !$media_part->header_exists("Content-Type") ) {
+			return new HTTPException("No Content-Type found.", 400);
+		}
+		$content_type = new App_Mimetype($media_part->headers["Content-Type"]);
+		
+		if ( !$this->is_supported_media_type($content_type) ) {
+			throw new HTTPException("Unsupported Media Type.",415);
+		}
+		
+		$entry = $this->create_entry_resource($name, $atom_part->request_body);
+		$media_resource = 
+			$this->create_media_resource($name, $media_part->request_body, $content_type);
+		
+		$entry->media_resource = $media_resource;
+		
+		// Content-ID
+		if ( !$media_part->header_exists("Content-ID") ) {
+			return new HTTPException("No Content-ID found.", 400);
+		}
+		$cid = $media_part->headers["Content-ID"];
+		
+		$doc = $entry->get_document();
+		
+		$editm = $doc->createElementNS("http://www.w3.org/2005/Atom","link");
+		$editm->setAttribute("rel","edit-media");
+		$editm->setAttribute("href",$media_resource->uri);
+		$doc->documentElement->appendChild($editm);
+		
+		$contents = $doc->getElementsByTagNameNS("http://www.w3.org/2005/Atom","content");
+		if ($contents->length==0) {
+			$content = $doc->createElementNS("http://www.w3.org/2005/Atom","content");
+			$doc->documentElement->appendChild($content);
+		} else {
+			$content=$contents->item(0);
+		}
+		$content->setAttribute("src",$media_resource->uri);
+		$content->setAttribute("type",$content_type);
+		
+		return $entry;
 	}
 	
 	/*

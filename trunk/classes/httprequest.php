@@ -138,6 +138,26 @@ class HTTPRequest {
 		
 		return $codings;
 	}
+	
+	/**
+	 * Create from data
+	 * data consists of headers and data
+	 */
+	function fill_from_data($data) {
+		$eq = strpos($data,"\r\n\r\n"); // is this the same on Linux?
+		$headers = substr($data, 0,$eq);
+		$this->request_body = substr($data, $eq+4);
+		
+		$parts = split("\n", $headers);
+
+		foreach($parts as $part) {
+			$eq = strpos($part, ": ");
+			$name = substr($part, 0,$eq);
+			$value = str_replace("\r","",substr($part, $eq+2));
+			
+			$this->headers[$name] = $value;
+		}
+	}
 }
 
 ?>

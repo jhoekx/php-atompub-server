@@ -78,7 +78,7 @@ class App_Mimetype {
 			foreach($params_parts as $param) {
 				$eq = strpos($param,"=");
 				$attribute = substr($param, 0,$eq);
-				$value = substr($param, $eq);
+				$value = substr($param, $eq+1);
 				
 				$this->parameters[$attribute] = $value;
 			}
