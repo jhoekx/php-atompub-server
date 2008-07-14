@@ -1,10 +1,12 @@
 <?php
 
 require_once("appentry.php");
+require_once("appmimetype.php");
 
 class App_MediaResource extends App_Entry {
 	
 	public $content;
+	public $extension;
 	
 	public function __construct($uri, $collection) {
 		parent::__construct($uri, $collection);
@@ -48,6 +50,9 @@ class App_MediaResource extends App_Entry {
 		$this->save();
 	}
 	
+	public function get_media_type() {
+		return new App_Mimetype($this->extension);
+	}
 	
 	public function http_GET($request) {
 		$response = new HTTPResponse();
