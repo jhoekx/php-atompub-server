@@ -152,7 +152,7 @@ class App_Servicedoc extends HTTPResource{
 		}
 	}
 	
-	private function find_collection($uri) {
+	public function find_collection($uri) {
 		if ( !isset($this->doc) ) {
 			$this->get_servicedoc();
 		}

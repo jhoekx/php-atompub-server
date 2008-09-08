@@ -179,7 +179,7 @@ class App_Collection extends Atom_Feed {
 		if ( $request->header_exists("Slug") ) {
 			$name = rawurlencode(
 						preg_replace(
-							"/([\;\/\?\:\@\&\=\+\$\, ])/",
+							"/([\;\/\?\:\@\&\=\+\$\,\! ])/",
 							"-",
 							rawurldecode($request->headers["Slug"])
 						)
