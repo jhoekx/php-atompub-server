@@ -86,8 +86,12 @@ class App_Collection extends Atom_Feed {
 			throw new HTTPException("Collection does not exist.", 404);
 		}
 		
-		if ($content_type->type=="multipart" && $content_type->subtype=="related") {
-			$entry = $this->create_multipart($name, $data, $content_type);
+		if ($content_type->type=="multipart") {
+			if ($content_type->subtype=="related") {
+				$entry = $this->create_multipart($name, $data, $content_type);
+			} else if ($content_type->subtype=="form-data") {
+				$entry = $this->create_formdata($name);
+			}
 		} else {
 			// Check if the collection accepts a given media type
 			if ( !$this->is_supported_media_type($content_type) ) {
@@ -362,6 +366,44 @@ class App_Collection extends Atom_Feed {
 		}
 		$cid = $media_part->headers["Content-ID"];
 		
+		$this->add_mediadata($entry, $media_resource);
+		
+		return $entry;
+	}
+    
+	protected function create_formdata($name) {
+		
+		if (!array_key_exists("file", $_FILES)) {
+			throw new HTTPException("Form field \"file\" missing.", 400);
+		}
+		
+		$data = file_get_contents($_FILES["file"]["tmp_name"]);
+		$content_type = new App_Mimetype($_FILES["file"]["type"]);
+		
+		if ( !$this->is_supported_media_type($content_type) ) {
+			throw new HTTPException("Unsupported Media Type.",415);
+		}
+		
+		$media_resource = $this->create_media_resource($name, $data, $content_type);
+		
+		if (array_key_exists("entry", $_POST) && $_POST["entry"]!="") {
+			if (get_magic_quotes_gpc()) {
+				$entry_data = stripslashes($_POST["entry"]);
+			} else {
+				$entry_data = $_POST["entry"];
+			}
+			$entry = $this->create_entry_resource($name, $entry_data);
+			$entry->media_resource = $media_resource;
+			
+			$this->add_mediadata($entry, $media_resource);
+		} else {
+			$entry = $this->create_media_link_entry($name, $media_resource);
+		}
+		
+		return $entry;
+	}
+	
+	protected function add_mediadata($entry, $media_resource) {
 		$doc = $entry->get_document();
 		
 		$editm = $doc->createElementNS("http://www.w3.org/2005/Atom","link");
@@ -377,11 +419,9 @@ class App_Collection extends Atom_Feed {
 			$content=$contents->item(0);
 		}
 		$content->setAttribute("src",$media_resource->uri);
-		$content->setAttribute("type",$content_type);
-		
-		return $entry;
+		$content->setAttribute("type",$media_resource->get_media_type());
 	}
-	
+
 	/*
 	 * Extension methods
 	 */
