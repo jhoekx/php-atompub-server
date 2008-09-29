@@ -1,0 +1,149 @@
+* {
+    margin:0;
+    padding:0;
+}
+
+.hidden {
+    display:none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family:Arial, sans-serif;
+}
+
+p, li {
+    font-family:Arial, sans-serif;
+}
+
+h1 {
+    color:white;
+    background-color:blue;
+    text-align:center;
+}
+
+:invalid {
+    background-color:red;
+}
+
+#toolbar > li {
+    display:inline;
+}
+#toolbar > li > a {
+    display:inline-block;
+    padding:0.5em;
+    width:3em;
+    text-align:center;
+}
+#toolbar > li > a:hover {
+    background-color:blue;
+    color:white;
+    text-decoration:none;
+}
+
+#article-form {
+    display:none;
+}
+#article {
+    position:relative;
+}
+#article-title {
+    width:70%;
+    margin:0.25em;
+    font-size:2em;
+}
+
+#content {
+    float:left;
+    width:70%;
+    margin:1em;
+}
+#content * {
+    font-family:serif;
+}
+
+#content p, #content pre, #content ul, #content ol, #content dl, #content table {
+    margin-top:1em;
+    margin-bottom:1em;
+}
+#content img {
+    max-width:80%;
+}
+.atompre {
+    white-space:pre-wrap;
+}
+
+#sidebar {
+    position:absolute;
+    right:0;
+    top:0;
+    width:20%;
+    color:#666666;
+}
+#sidebar li {
+    list-style-type:none;
+}
+#sidebar > li > h2 {
+    font-size:1.5em;
+    text-transform:lowercase;
+    color:black;
+}
+#sidebar textarea, #sidebar input {
+    width:95%;
+}
+
+#open > p > select {
+    width:100%;
+}
+#open li {
+    margin:1em;
+}
+#open > ul {
+    height:17em;
+    overflow:auto;
+}
+#media {
+    height:auto;
+}
+#media p {
+    margin:1em;
+}
+#media label > span {
+    display:inline-block;
+    width:5em;
+}
+#media > ul {
+    margin:1em;
+}
+#media label input, #media label select, #media label textarea {
+    width:20em;
+}
+
+.popup {
+    position:absolute;
+    left:20%;
+    top:5em;
+    width:60%;
+    height:20em;
+    z-index:1;
+    overflow:auto;
+    border:1px solid blue;
+    background-color:white;
+    opacity:0.95;
+}
+.popup > h2 {
+    background-color:blue;
+    color:white;
+    font-size:1em;
+    text-align:center;
+    position:relative;
+}
+.popup > h2 > span {
+    position:absolute;
+    right:0;
+    top:0;
+    width:1em;
+}
+.popup > h2 > span:hover {
+    background-color:white;
+    color:blue;
+}
