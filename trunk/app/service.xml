@@ -3,24 +3,20 @@
          xmlns:atom="http://www.w3.org/2005/Atom"
 >
 <workspace>
-	<atom:title>PHP Atompub Server</atom:title>
+	<atom:title>PHP AtomPub Server</atom:title>
 
 	<collection href="test/">
-		<atom:title>Atompub Test: Test</atom:title>
+		<atom:title>AtomPub Test: Test</atom:title>
 		<accept>*/*</accept>
-		<categories>
-			<atom:category term="geen"/>
-		</categories>
 	</collection>
 	
 	<collection href="news/">
-		<atom:title>Atompub Test: News</atom:title>
+		<atom:title>AtomPub Test: News</atom:title>
 	</collection>
 	
-	<collection href="lim/">
-		<atom:title>Atompub Test: Limited</atom:title>
-		<accept>text/html</accept>
+	<collection href="media/">
+		<atom:title>AtomPub Test: Media</atom:title>
+		<accept>*/*</accept>
 	</collection>
-
 </workspace>
 </service>
