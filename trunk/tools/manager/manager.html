@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<title>AtomPub Manager</title>
+
+<script src="uri.js"></script>
+<script src="helpers.js"></script>
+<script src="atom.js"></script>
+
+<script src="manager.js"></script>
+<script src="toolbar.js"></script>
+
+<script>
+document.addEventListener("load", function () {
+    var serviceURI = "../../app/service";
+    serviceURI = composeURI(resolveRelativeURI(serviceURI, document.location.href));
+    Manager.load(serviceURI);
+    Manager.clear();
+}, false);
+</script>
+
+<style>
+@import "styles.css";
+</style>
+
+<form id="article-form"><input type="submit" id="article-submit"></form>
+
+<h1>AtomPub Manager</h1>
+
+<ul id="toolbar">
+    <li><a href="" id="toolbar-new">New</a>
+    <li><a href="" id="toolbar-open">Open</a>
+    <li><a href="" id="toolbar-save">Save</a>
+    <li><a href="" id="toolbar-delete">Delete</a>
+    <li>|
+    <li><a href="" id="toolbar-preview">Preview</a>
+    <li><a href="" id="toolbar-edit">Edit</a>
+    <li>|
+    <li><a href="" id="toolbar-media">Media</a>
+</ul>
+
+<div id="open" class="popup hidden">
+    <h2>Open<span class="popup-close">x</span></h2>
+    <p><select id="open-options"></select>
+    <ul></ul>
+</div>
+
+<div id="media" class="popup hidden">
+    <h2>Media<span class="popup-close">x</span></h2>
+    <form id="media-form" method="POST" enctype="multipart/form-data" target="media-frame">
+        <p><label><span>Upload to: </span><select id="media-options"></select></label>
+        <p><label><span>File: </span><input type="file" name="file" required></label>
+        <p><label><span>Title: </span><input name="media-title"></label>
+        <p><label><span>Author: </span><input name="media-author"></label>
+        <p><label><span>Summary: </span><textarea name="media-summary" rows="4" cols="40"></textarea></label>
+        <p><input type="submit" value="Upload"><input type="hidden" name="entry">
+    </form>
+    <ul id="media-list"></ul>
+    <iframe id="media-frame" name="media-frame" class="hidden"></iframe>
+</div>
+
+<div id="article">
+    <p>
+        <input type="text" id="article-title" name="article-title" form="article-form" 
+            pattern="\s*\S+.*" title="You must enter a title." 
+            required>
+    <div id="content"></div>
+    
+    <ul id="sidebar">
+        <li>
+            <h2>Author</h2>
+            <ul>
+                <li>
+                    <p><label for="sidebar-name">Name:</label>
+                    <p>
+                        <input id="sidebar-name" name="sidebar-name" form="article-form" 
+                               pattern="\s*\S+.*" title="You must enter a name."
+                               required>
+                <li>
+                    <p><label for="sidebar-uri">URI:</label>
+                    <p><input id="sidebar-uri" name="sidebar-uri" form="article-form" type="url">
+            </ul>
+        <li>
+            <h2>Summary</h2>
+            <ul>
+                <li><textarea id="sidebar-summary" rows="5" cols="40" form="article-form"></textarea>
+            </ul>
+        <li>
+            <h2>Time</h2>
+            <ul>
+                <li>
+                    <p><label for="sidebar-updated">Updated</label>
+                    <p><input type="datetime" id="sidebar-updated" form="article-form">
+                <li>
+                    <p><label for="sidebar-published">Published</label>
+                    <p><input type="datetime" id="sidebar-published" form="article-form">
+            </ul>
+    </ul>
+</div>
+
