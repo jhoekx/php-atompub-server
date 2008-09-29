@@ -91,6 +91,8 @@ class App_Collection extends Atom_Feed {
 				$entry = $this->create_multipart($name, $data, $content_type);
 			} else if ($content_type->subtype=="form-data") {
 				$entry = $this->create_formdata($name);
+			} else {
+				throw new HTTPException("Unsupported Media Type.",415);
 			}
 		} else {
 			// Check if the collection accepts a given media type
