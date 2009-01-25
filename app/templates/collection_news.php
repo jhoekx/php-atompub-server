@@ -1,6 +1,16 @@
 <?php
 
-
+/**
+ * App_Collection_news demonstrates how to extend a collection.
+ *  - It gives a custom Slug to POSTed entries (yyyy/mm/dd/name)
+ *  - An atom:link element is added to point to the related HTML document
+ *  - Content is sanitized using HTMLPurifier
+ *
+ * Note that you should download HTMLPurifier from http://htmlpurifier.org/ 
+ * and install it in "./purifier/". Any POST to this collection will fail 
+ * without it. Or install it using PEAR and change the require to :
+ *     require_once("HTMLPurifier.auto.php");
+ */
 class App_Collection_news extends App_Collection {
 
 	public function __construct($name, $service) {
@@ -18,16 +28,18 @@ class App_Collection_news extends App_Collection {
 		
 		$doc = $entry->get_document();
 		
+		// Link to the related HTML document
 		$link = $doc->createElementNS("http://www.w3.org/2005/Atom","link");
 		$link->setAttribute("rel","alternate");
 		$link->setAttribute("type","text/html");
 		
+		// Change the URI to the correct value, this is just an example.
 		$uri = new URI("http://localhost/appv2/news/".$entry->name);
 		$link->setAttribute("href", $uri);
 		
 		$doc->documentElement->appendChild($link);
 		
-		include_once("purifier/HTMLPurifier.auto.php");
+		require_once("purifier/HTMLPurifier.auto.php");
 		
 		$this->clean_content($doc);
 	}
