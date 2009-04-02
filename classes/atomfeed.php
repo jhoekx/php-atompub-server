@@ -62,7 +62,7 @@ class Atom_Feed extends EventHTTPResource {
 	}
 	
 	public function http_GET($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		$this->dispatchEvent( new HTTPEvent("before_collection_get", $request, $response) );
 		
@@ -101,7 +101,7 @@ class Atom_Feed extends EventHTTPResource {
 	 public function get_feed_page() {
 		// Check if the collection exists
 		if ( !$this->service->collection_exists($this->uri) ) {
-			throw new HTTPException("Collection does not exist.",404);
+			throw new App_HTTPException("Collection does not exist.",404);
 		}
 		
 		$key = $this->get_page_key($this->pagenr);
@@ -141,7 +141,7 @@ class Atom_Feed extends EventHTTPResource {
 			$end = $total_entries;
 		}
 		if ($start >= $total_entries && ($total_entries !== 0 || $this->pagenr > 1)) {
-			throw new HTTPException("Page does not exist.",404);
+			throw new App_HTTPException("Page does not exist.",404);
 		}
 		if ( $this->pagenr == 0 ) {
 			$start = 0;

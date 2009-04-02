@@ -23,12 +23,12 @@ class App_Collection extends Atom_Feed {
 	 * HTTP Methods
 	 */
 	public function http_POST($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		$this->dispatchEvent( new HTTPEvent("before_collection_post", $request, $response) );
 		
 		if ( !$request->header_exists("Content-Type") ) {
-			throw new HTTPException("No Content-Type header sent.", 400);
+			throw new App_HTTPException("No Content-Type header sent.", 400);
 		}
 		
 		$name = $this->give_name($this->parse_slug($request));
@@ -64,7 +64,7 @@ class App_Collection extends Atom_Feed {
 	public function get_entry($uri) {
 	
 		if (!$this->atom_store->exists($uri)) {
-			throw new HTTPException("Resource does not exist.",404);
+			throw new App_HTTPException("Resource does not exist.",404);
 		}
 		
 		if ($uri->get_extension() == "atomentry") {
@@ -83,7 +83,7 @@ class App_Collection extends Atom_Feed {
 	public function create_entry($name, $data, $content_type) {
 		// Check if the collection exists
 		if ( !$this->service->collection_exists($this->uri) ) {
-			throw new HTTPException("Collection does not exist.", 404);
+			throw new App_HTTPException("Collection does not exist.", 404);
 		}
 		
 		if ($content_type->type=="multipart") {
@@ -92,12 +92,12 @@ class App_Collection extends Atom_Feed {
 			} else if ($content_type->subtype=="form-data") {
 				$entry = $this->create_formdata($name);
 			} else {
-				throw new HTTPException("Unsupported Media Type.",415);
+				throw new App_HTTPException("Unsupported Media Type.",415);
 			}
 		} else {
 			// Check if the collection accepts a given media type
 			if ( !$this->is_supported_media_type($content_type) ) {
-				throw new HTTPException("Unsupported Media Type.",415);
+				throw new App_HTTPException("Unsupported Media Type.",415);
 			}
 			
 			if ( $this->mimetype_is_atom($content_type) ) {
@@ -232,18 +232,18 @@ class App_Collection extends Atom_Feed {
 		$uri = new URI($this->base_uri.$this->name."/".$name.".atomentry");
 	
 		if ( $this->entry_exists($uri) ) {
-			throw new HTTPException("Entry already exists.", 409);
+			throw new App_HTTPException("Entry already exists.", 409);
 		}
 		
 		// test for well-formed XML
 		$entry_doc = DOMDocument::loadXML($data, LIBXML_NOWARNING+LIBXML_NOERROR);
 		if( !isset($entry_doc) || $entry_doc == FALSE ) {
-			throw new HTTPException("XML Parsing failed!",400);
+			throw new App_HTTPException("XML Parsing failed!",400);
 		}
 		
 		if ( !$this->is_atom_entry($entry_doc) ) {
 			// atom file, but no entry -> disallow
-			throw new HTTPException("Adding feeds to a collection is undefined.",400);
+			throw new App_HTTPException("Adding feeds to a collection is undefined.",400);
 		}
 		
 		// link[@rel='edit']
@@ -273,7 +273,7 @@ class App_Collection extends Atom_Feed {
 		$media_resource_uri = new URI($this->base_uri.$this->name."/$name.".$extension);
 		
 		if ( $this->entry_exists($media_link_uri) ) {
-			throw new HTTPException("Entry already exists.", 409);
+			throw new App_HTTPException("Entry already exists.", 409);
 		}
 		
 		// convert to utf-8
@@ -299,7 +299,7 @@ class App_Collection extends Atom_Feed {
 		$content_type = $media_resource->get_media_type();
 		
 		if ( $this->entry_exists($media_link_uri) ) {
-			throw new HTTPException("Entry already exists.", 409);
+			throw new App_HTTPException("Entry already exists.", 409);
 		}
 		
 		if (!defined("FEED_TEMPLATE_DIR")) {
@@ -339,7 +339,7 @@ class App_Collection extends Atom_Feed {
 	
 	protected function create_multipart($name, $data, $content_type) {
 		if ( !$content_type->parameter_exists("boundary") ) {
-			throw new HTTPException("No boundary in multipart message.", 400);
+			throw new App_HTTPException("No boundary in multipart message.", 400);
 		}
 		
 		$mp = new App_Multipart($this, $content_type->parameters["boundary"], $name, $data);
@@ -348,12 +348,12 @@ class App_Collection extends Atom_Feed {
 		$media_part = $mp->get_media_part();
 		
 		if ( !$media_part->header_exists("Content-Type") ) {
-			return new HTTPException("No Content-Type found.", 400);
+			return new App_HTTPException("No Content-Type found.", 400);
 		}
 		$content_type = new App_Mimetype($media_part->headers["Content-Type"]);
 		
 		if ( !$this->is_supported_media_type($content_type) ) {
-			throw new HTTPException("Unsupported Media Type.",415);
+			throw new App_HTTPException("Unsupported Media Type.",415);
 		}
 		
 		$entry = $this->create_entry_resource($name, $atom_part->request_body);
@@ -364,7 +364,7 @@ class App_Collection extends Atom_Feed {
 		
 		// Content-ID
 		if ( !$media_part->header_exists("Content-ID") ) {
-			return new HTTPException("No Content-ID found.", 400);
+			return new App_HTTPException("No Content-ID found.", 400);
 		}
 		$cid = $media_part->headers["Content-ID"];
 		
@@ -376,14 +376,14 @@ class App_Collection extends Atom_Feed {
 	protected function create_formdata($name) {
 		
 		if (!array_key_exists("file", $_FILES)) {
-			throw new HTTPException("Form field \"file\" missing.", 400);
+			throw new App_HTTPException("Form field \"file\" missing.", 400);
 		}
 		
 		$data = file_get_contents($_FILES["file"]["tmp_name"]);
 		$content_type = new App_Mimetype($_FILES["file"]["type"]);
 		
 		if ( !$this->is_supported_media_type($content_type) ) {
-			throw new HTTPException("Unsupported Media Type.",415);
+			throw new App_HTTPException("Unsupported Media Type.",415);
 		}
 		
 		$media_resource = $this->create_media_resource($name, $data, $content_type);

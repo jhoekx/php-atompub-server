@@ -1,6 +1,6 @@
 <?php
 
-class HTTPException extends Exception {
+class App_HTTPException extends Exception {
 	
 	public $http_status;
 	

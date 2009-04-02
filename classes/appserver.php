@@ -41,7 +41,7 @@ class App_Server {
 			}
 		}
 		
-		throw new HTTPException("No matching resource!",404);
+		throw new App_HTTPException("No matching resource!",404);
 	}
 	
 	public function create_resource($uri, $obj, $vars) {

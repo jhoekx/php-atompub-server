@@ -177,7 +177,7 @@ class App_Servicedoc extends HTTPResource{
 	 */
 	 
 	 public function http_GET($request) {
-	 	$response = new HTTPResponse();
+	 	$response = new App_HTTPResponse();
 		
 		$etag = '"'.md5(filemtime($this->filename)).'"';
 		

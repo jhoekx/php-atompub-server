@@ -37,7 +37,7 @@ class App_Entry extends EventHTTPResource {
 
 			$data = $this->store->get($this->uri);
 			if ($data == "") {
-				throw new HTTPException("Error loading document.",500);
+				throw new App_HTTPException("Error loading document.",500);
 			}
 			
 			$this->doc = DOMDocument::loadXML($data);
@@ -127,7 +127,7 @@ class App_Entry extends EventHTTPResource {
 	 * HTTP Methods
 	 */
 	public function http_GET($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		$this->dispatchEvent( new HTTPEvent("before_entry_get", $request, $response) );
 		
@@ -156,7 +156,7 @@ class App_Entry extends EventHTTPResource {
 	}
 	
 	public function http_PUT($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		$this->dispatchEvent( new HTTPEvent("before_entry_put", $request, $response) );
 		
@@ -167,15 +167,15 @@ class App_Entry extends EventHTTPResource {
 		if ( (!$request->header_exists('If-Match')) || 
 					( $request->header_exists('If-Match') && 
 						$etag != str_replace(";gzip","",$request->headers['If-Match']) ) ) {
-			throw new HTTPException("Not the most recent version in cache.", 412);
+			throw new App_HTTPException("Not the most recent version in cache.", 412);
 		}
 		if ( !$request->header_exists("Content-Type") ) {
-			throw new HTTPException("No Content-Type header sent.", 400);
+			throw new App_HTTPException("No Content-Type header sent.", 400);
 		}
 		
 		$doc = DOMDocument::loadXML($request->request_body, LIBXML_NOWARNING+LIBXML_NOERROR);
 		if( !isset($doc) || $doc == FALSE ) {
-			throw new HTTPException("XML Parsing failed!",400);
+			throw new App_HTTPException("XML Parsing failed!",400);
 		}
 		
 		$this->update($doc);
@@ -189,7 +189,7 @@ class App_Entry extends EventHTTPResource {
 	}
 	
 	public function http_DELETE($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		$this->dispatchEvent( new HTTPEvent("before_entry_delete", $request, $response) );
 		

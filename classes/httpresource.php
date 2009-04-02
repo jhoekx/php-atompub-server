@@ -34,7 +34,7 @@ class HTTPResource {
 	}
 	
 	public function http_HEAD($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		if ( $this->method_allowed("GET") ) {
 			$response = $this->http_GET($request);
