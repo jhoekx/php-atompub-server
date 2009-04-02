@@ -11,6 +11,18 @@ require_once("httpexception.php");
 
 require_once("feedserializer.php");
 
+/**
+ * A feed is a time ordered collection of entries.
+ * A feed consists of multiple pages.
+ * Pages are accessed by adding a "page" query parameter to the URI.
+ * A feed has a name: currently the first path component after the base URI of the service.
+ *
+ * Feeds are HTTP resources. They implement the GET method.
+ *
+ * Feeds fire the following HTTP events:
+ * - before_collection_get
+ * - collection_get
+ */
 class Atom_Feed extends EventHTTPResource {
 	
 	public $base_uri;
@@ -25,7 +37,13 @@ class Atom_Feed extends EventHTTPResource {
 	public $atom_store; // ATOM_STORE_DIR
 	public $list_store; // LIST_STORE_DIR
 	public $feed_cache; // FEED_CACHE_DIR
-	
+
+    /**
+     * Create a new Feed object with the given URI and belonging to the indicated service.
+     *
+     * @param URI $uri The URI of this feed.
+     * @param App_Servicedoc $service The service document associated with this feed.
+     */
 	public function __construct($uri, $service) {
 		parent::__construct($uri);
 		
@@ -60,7 +78,14 @@ class Atom_Feed extends EventHTTPResource {
 		}
 		$this->feed_cache = new App_FileStore(FEED_CACHE_DIR, $this->base_uri);
 	}
-	
+
+    /**
+     * Request a representation of this feed with the GET method.
+     *
+     * @param App_HTTPRequest $request The HTTP request object.
+     *
+     * @return App_HTTPResponse The HTTP response to the request.
+     */
 	public function http_GET($request) {
 		$response = new App_HTTPResponse();
 		
@@ -324,4 +349,119 @@ class Atom_Feed extends EventHTTPResource {
 		}
 	}
 	
+}
+
+/**
+ * CollectionManager manages all data of a collection.
+ * It does not check the validity of the data. Neither does it test if the collection exists
+ * at all.
+ */
+class CollectionManager {
+
+    /*
+     * Location of this collection and service.
+     */
+    private $uri;
+    private $base_uri;
+
+    /*
+     * Simple key-value stores for lists and data
+     */
+    private $list_store;
+    private $data_store;
+
+    /*
+     * The list that's being worked on.
+     */
+    private $working_list;
+
+    /**
+     * Creata a new collection manager.
+     * @param URI $uri The URI of the collection.
+     * @param URI $base_uri The base URI of the service.
+     */
+    public function __construct($uri, $base_uri) {
+        $this->uri = $uri;
+        $this->base_uri = $base_uri;
+
+        if (!defined("ATOM_STORE_DIR")) {
+            define("ATOM_STORE_DIR", "store");
+        }
+        if (!defined("LIST_STORE_DIR")) {
+            define("LIST_STORE_DIR", "lists");
+        }
+
+        $this->data_store = new App_FileStore(ATOM_STORE_DIR, $base_uri);
+        $this->list_store = new App_FileStore(LIST_STORE_DIR, $base_uri);
+    }
+
+    /**
+     * Get a list of entries in this collection.
+     * @return array A list [{URI, last modified}]
+     */
+    public function list_entries() {
+    }
+
+    /**
+     * Add a new entry to the collection.
+     * This method does not save the new state (use commit()).
+     * @param URI $urli The URI of the entry
+     */
+    public function add_entry($uri) {
+
+    }
+
+    /**
+     * Remove an entry from the collection.
+     * This method does not save the new state (use commit()).
+     * @param URI The URI of the entry.
+     */
+    public function remove_entry($uri) {
+    }
+
+    /**
+     * Notify the collection of an update.
+     * The feed ordering changes because of the update.
+     * This method does not save the new state (use commit()).
+     * @param URI The URI of the entry
+     */
+    public function update_entry($uri) {
+    }
+
+    /**
+     * Commit all pending changes to the collection state.
+     */
+    public function commit() {
+    }
+
+    /**
+     * Return the last modified date of the collection.
+     * @return int The unix timestamp of the last modification.
+     */
+    public function last_modified() {
+    }
+
+    /**
+     * Return the last modified date of an entry.
+     * @param URI $uri The URI of the entry.
+     * @return int The unix timestamp of the last modification.
+     */
+    public function entry_last_modified($uri) {
+    }
+
+    /**
+     * Get the data at the given URI.
+     * @param URI $uri The URI of the data.
+     * @return String The data.
+     */
+    public function get_data($uri) {
+    }
+
+    /**
+     * Immediately save the given data.
+     * @param URI $uri The URI of the entry.
+     * @param String $data The data.
+     */
+    public function save_data($uri, $data) {
+    }
 }
