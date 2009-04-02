@@ -118,7 +118,7 @@ class App_Cleaner {
 		}
 		$contents = $new->getElementsByTagNameNS("http://www.w3.org/2005/Atom","content");
 		if ($contents->length > 1 ) {
-			throw new HTTPException("Multiple contents not allowed.",400);
+			throw new App_HTTPException("Multiple contents not allowed.",400);
 		} else if ($contents->length === 1 && isset($orig_media)) {
 			$content = $contents->item(0);
 			$content->setAttribute("src",$content_uri);

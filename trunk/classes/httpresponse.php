@@ -1,6 +1,6 @@
 <?php
 
-class HTTPResponse {
+class App_HTTPResponse {
 	
 	public $http_status;
 	

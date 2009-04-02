@@ -25,7 +25,7 @@ class App_Categorized_Collection extends App_Collection {
 		$cats = $this->find_categories($entry->get_document()->documentElement);
 		
 		if ( !$this->category_allowed($cats) ) {
-			throw new HTTPException("Category not allowed", 412);
+			throw new App_HTTPException("Category not allowed", 412);
 		}
 		
 		$oldcats = array_diff($this->temp_cats, $cats);
@@ -65,7 +65,7 @@ class App_Categorized_Collection extends App_Collection {
 		$cats = $this->find_categories($entry->get_document()->documentElement);
 		
 		if ( !$this->category_allowed($cats) ) {
-			throw new HTTPException("Category not allowed", 412);
+			throw new App_HTTPException("Category not allowed", 412);
 		}
 		
 		foreach( $cats as $cat ) {

@@ -1,18 +1,18 @@
 <?php
 /**
- * Class definition of the HTTPRequest class
+ * Class definition of the App_HTTPRequest class
  * @package php-atompub-server
  */
  
 require_once("appuri.php");
 
 /**
- * The HTTPRequest class
+ * The App_HTTPRequest class
  *
  * Fields and some utility methods for an HTTP request.
  * @package php-atompub-server
  */
-class HTTPRequest {
+class App_HTTPRequest {
 	
 	public $headers = array();
 	

@@ -24,7 +24,7 @@ class App_MediaResource extends App_Entry {
 
 			$data = $this->store->get($this->uri);
 			if ($data == "") {
-				throw new HTTPException("Error loading data.",500);
+				throw new App_HTTPException("Error loading data.",500);
 			}
 			
 			$this->content = $data;
@@ -55,7 +55,7 @@ class App_MediaResource extends App_Entry {
 	}
 	
 	public function http_GET($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		$time = $this->last_modified();
 		
@@ -85,7 +85,7 @@ class App_MediaResource extends App_Entry {
 	}
 	
 	public function http_PUT($request) {
-		$response = new HTTPResponse();
+		$response = new App_HTTPResponse();
 		
 		$time = $this->last_modified();
 		$etag = '"'.md5($time).'"';
@@ -94,10 +94,10 @@ class App_MediaResource extends App_Entry {
 		if ( (!$request->header_exists('If-Match')) || 
 					( $request->header_exists('If-Match') && 
 						$etag != str_replace(";gzip","",$request->headers['If-Match']) ) ) {
-			throw new HTTPException("Not the most recent version in cache.", 412);
+			throw new App_HTTPException("Not the most recent version in cache.", 412);
 		}
 		if ( !$request->header_exists("Content-Type") ) {
-			throw new HTTPException("No Content-Type header sent.", 400);
+			throw new App_HTTPException("No Content-Type header sent.", 400);
 		}
 		
 		$content_type = $request->headers["Content-Type"];
@@ -123,6 +123,6 @@ class App_MediaResource extends App_Entry {
 	}
 	
 	public function http_DELETE($request) {
-		throw new HTTPException("Delete the media link entry instead!",400);
+		throw new App_HTTPException("Delete the media link entry instead!",400);
 	}
 }

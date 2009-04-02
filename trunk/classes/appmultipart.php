@@ -14,13 +14,13 @@ class App_Multipart {
 		$parts = split("--".$boundary, $data);
 		
 		if ( count($parts)!=4 ) {
-			throw new HTTPException("Unsupported multipart data.",400);
+			throw new App_HTTPException("Unsupported multipart data.",400);
 		}
 		
-		$this->requests[] = new HTTPRequest();
+		$this->requests[] = new App_HTTPRequest();
 		$this->requests[0]->fill_from_data($parts[1]);
 		
-		$this->requests[] = new HTTPRequest();
+		$this->requests[] = new App_HTTPRequest();
 		$this->requests[1]->fill_from_data($parts[2]);
 	}
 	
@@ -39,7 +39,7 @@ class App_Multipart {
 				}
 			}
 		}
-		throw new HTTPException("No entry part in multipart.",400);
+		throw new App_HTTPException("No entry part in multipart.",400);
 	}
 	
 	public function get_media_part() {
@@ -57,6 +57,6 @@ class App_Multipart {
 				}
 			}
 		}
-		throw new HTTPException("No media part in multipart.",400);
+		throw new App_HTTPException("No media part in multipart.",400);
 	}
 }
