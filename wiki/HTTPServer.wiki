@@ -24,9 +24,6 @@ DirectoryIndex start.php
 
 Make sure the server code is in the `../classes/` directory, or change the includes in the start.php file.
 
-== Base URI ==
-Proceed to add the base URI of the test site to `start.php`. It should be the URI of the "directory" where that file lives. Be sure to include the final /
-
 == Permissions ==
 The web server should have write access to the directory.
 
