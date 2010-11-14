@@ -188,8 +188,8 @@ class URI {
 			throw new Exception("URIs must be absolute");
 		}
 		
-		$base_path = split("/",$base->components["path"]);
-		$path = split("/",$this->components["path"]);
+		$base_path = explode("/",$base->components["path"]);
+		$path = explode("/",$this->components["path"]);
 		
 		// check if any of the parts matches
 		$min = min(count($base_path), count($path));
@@ -237,7 +237,7 @@ class URI {
 		return $this->compose_parts($this->components);
 	}
 	public function get_extension() {
-		$parts = split("\.",$this->components["path"]);
+		$parts = explode("\.",$this->components["path"]);
 		return  $parts[count($parts)-1];
 	}
 	
@@ -246,9 +246,9 @@ class URI {
 			return "";
 		}
 		
-		$parts = split("&", $this->components["query"]);
+		$parts = explode("&", $this->components["query"]);
 		foreach ( $parts as $part ) {
-			$temp = split("=", $part);
+			$temp = explode("=", $part);
 			if ( is_array($temp) && $temp[0]==$name) {
 				return $temp[1];
 			}

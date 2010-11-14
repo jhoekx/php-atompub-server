@@ -17,7 +17,7 @@ class App_Category extends Atom_Feed {
 		
 		// get name from URI
 		$r_uri = $this->uri->base_on($this->base_uri);
-		$nparts = split("/",$r_uri);
+		$nparts = explode("/",$r_uri);
 		$this->name = "-/".$nparts[1];
 	}
 	

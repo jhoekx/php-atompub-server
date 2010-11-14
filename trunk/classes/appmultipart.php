@@ -11,7 +11,7 @@ class App_Multipart {
 
 	public function __construct($collection, $boundary, $name, $data) {
 
-		$parts = split("--".$boundary, $data);
+		$parts = explode("--".$boundary, $data);
 		
 		if ( count($parts)!=4 ) {
 			throw new App_HTTPException("Unsupported multipart data.",400);

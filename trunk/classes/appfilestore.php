@@ -16,7 +16,7 @@ class App_FileStore {
 	public function store($uri, $data) {
 		$uri = $this->get_key($uri);
 		
-		$parts = split("/",$uri);
+		$parts = explode("/",$uri);
 		
 		$filename = array_pop($parts);
 		

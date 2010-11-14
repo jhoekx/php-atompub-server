@@ -42,7 +42,7 @@ class phpbb_atom_store {
 	
 	private function get_key($uri) {
 		$uri = new URI($uri);
-		$parts = split("/",$uri);
+		$parts = explode("/",$uri);
 		$id_part = $parts[count($parts)-1];
 		$id = str_replace(".atomentry","",$id_part);
 		

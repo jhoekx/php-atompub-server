@@ -9,8 +9,8 @@ class App_URITemplate {
 	}
 	
 	public function matches($uri) {
-		$parts = split("/", $this->expr->components["path"]);
-		$uriparts = split("/", $uri->components["path"]);
+		$parts = explode("/", $this->expr->components["path"]);
+		$uriparts = explode("/", $uri->components["path"]);
 		
 		if ( count($parts) != count($uriparts) ) {
 			return FALSE;
