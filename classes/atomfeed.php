@@ -50,7 +50,7 @@ class Atom_Feed extends EventHTTPResource {
 		$this->base_uri = $service->base_uri;
 
 		$this->name = str_replace("/","",$this->uri->base_on($this->base_uri));
-		$nameparts = split("\?",$this->name);
+		$nameparts = explode("\?",$this->name);
 		if (is_array($nameparts)) {
 			$this->name = $nameparts[0];
 		}

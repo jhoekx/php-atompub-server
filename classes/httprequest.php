@@ -148,7 +148,7 @@ class App_HTTPRequest {
 		$headers = substr($data, 0,$eq);
 		$this->request_body = substr($data, $eq+4);
 		
-		$parts = split("\n", $headers);
+		$parts = explode("\n", $headers);
 
 		foreach($parts as $part) {
 			$eq = strpos($part, ": ");
