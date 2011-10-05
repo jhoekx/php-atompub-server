@@ -191,10 +191,10 @@ class App_Collection extends Atom_Feed {
 						)
 			);
 		} else {
-			$name = rand();
+			$name = rand() . getmypid();
 		}
 		if ($name == "") {
-			$name = rand();
+			$name = rand() . getmypid();
 		}
 		return utf8_encode($name);
 	}
